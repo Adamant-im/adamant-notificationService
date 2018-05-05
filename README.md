@@ -24,8 +24,8 @@ In short:
 - We do not use third party services to send notifications. Your tokens and addresses does not fly around the Internet.
 - It is technically impossible to read an actual message from transaction. And yes - because of this, it is impossible to send a notification with message preview. No.
 - Your device token is unique for each application on your device. We can't magically find your facebook page with your device token.
-- New device token generated each time you reinstall app, or just reenable notifications. Yes, you can just disable notifications, and device token in our database becomes useless. The next time we try to send a push, Apple will tell us that the token is broken. That's all.
-- We do have plans to implement 'auto-renew-token' on client-side. Later.
+- New device token generated each time you reinstall the app, or just reenable notifications. Yes, you can just disable notifications, and device token in our database becomes useless. Next time we try to send a push, Apple will tell us that the token is broken. That's all.
+- We do have plans to implement 'auto-renew-token' feature on client-side. Later.
 - Device tokens database will not be published. It's a "classic" centralised service, with open-source codebase and hidden production database. If you don't like this idea - you can use Adamant without "real" pushes, it's up to you.
 - We *may* change this later, if we find a better solution.
 
@@ -36,7 +36,7 @@ We have plans and ideas how to implement this, stay tuned.
 
 ## Installation
 Want to try it out? There is no windows or buttons, just console, so it's boring, only if you wan't to bite some C#.
-1. You gonna need a dotnet.core runtime to launch ANS. Go to [Microsoft.com](https://www.microsoft.com/net/learn/get-started) and download SDK for your platform
+1. You gonna need a dotnet.core runtime to launch ANS. Go to [Microsoft.com](https://www.microsoft.com/net/learn/get-started) and download SDK for your platform.
 2. Clone or download this repository.
 3. Open terminal/console/cmd and type `dotnet restore` in solution's folder, or just open solution in [Visual Studio](https://www.visualstudio.com) (there is one for macOS now).
 4. Later i will add here a step for initializing a database.
