@@ -15,31 +15,45 @@ namespace Adamant.NotificationService.PollingWorker
 
         static void Main(string[] args)
         {
+			#region Config
+
 			var builder = new ConfigurationBuilder()
 				.SetBasePath(Directory.GetCurrentDirectory())
 				.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 			var configuration = builder.Build();
-
+			
 			var connectionString = configuration.GetConnectionString("Devices");
+			
+			if (!int.TryParse(configuration["PollingOptions:Delay"], out int delay))
+				delay = 2000;
+			
+			if (!Boolean.TryParse(configuration["PollingOptions:Warmup"], out bool warmup))
+				warmup = true;
+
+			#endregion
+
+			#region DataContext
 
 			var context = DevicesContext.CreateContextWithSQLite(connectionString);
-
 			Console.WriteLine("Total registered devices: {0}", context.Devices.Count());
+
+			#endregion
+
+			#region Initializing worker
 
 			var applePusher = new Pusher { Configuration = configuration };
 			var api = new AdamantApi(configuration);
 			var worker = new AdamantPollingWorker
 			{
-				Delay = TimeSpan.FromSeconds(2),
+				Delay = TimeSpan.FromMilliseconds(delay),
 				Pusher = applePusher,
 				AdamantApi = api,
 				Context = context
 			};
 
-			if (!Boolean.TryParse(configuration["PollingOptions:Warmup"], out bool warmup))
-				warmup = true;
+			#endregion
 
-			Console.WriteLine("Any key to stop...");
+			Console.WriteLine("Starting polling. Delay: {0}ms.\nAny key to stop...", delay);
 
 			applePusher.Start();
 
