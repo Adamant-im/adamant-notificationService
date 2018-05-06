@@ -12,22 +12,22 @@ Right now only iOS pushes implemented, PWA will be the next one.
 ## Application
 There are two main parts:
 
-**ANSRegistrationService** — device sends its unique token to this Service, and the Service saves into the database.
+**ANSRegistrationService** — device sends its unique token to this Service, and the Service saves it into the database.
 
-**ANSPollingWorker** — console application that polls ADAMANT nodes for new transactions and checks for registered devices of receivers. If there is a registered device for the transaction of recipient — sends a notification.
+**ANSPollingWorker** — console application that polls ADAMANT nodes for new transactions and checks for registered devices of receivers. If there is a registered device for the recipient of the transaction — sends a notification.
 
 ## QA
 #### Device token?! Are you insane!? My security!!
 You can read about Apple Push Notification service (APNs) and security [here](https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/APNSOverview.html) and google more about it.
 
 In short:
-— We do not use third party services to send notifications. Your tokens and addresses do not fly around the Internet.
-— It is technically impossible to read message contents from transaction. And yes, because of this, it is impossible to send a notification with a message preview. No.
-— Your device token is unique for each application on your device. We can't magically find your facebook page with your device token. No connections. Only random device token is sent to the Service.
-— New device token generated each time you reinstall the app, or just reenable notifications. Yes, you can just disable notifications, and device token in Service's database becomes useless. Next time Service will try to send a push notification, Apple will tell that the token is broken. That's all.
-— We do have plans to implement 'auto-renew-token' feature on client-side. Later.
-— Device tokens database will not be published. It's a "classic" centralised service, with open-source codebase and hidden production database. If you don't like this idea — you can use ADAMANT without "real" pushes, it's up to you. 
-— We *may* change this later, if we find a better solution.
+- We do not use third party services to send notifications. Your tokens and addresses do not fly around the Internet.
+- It is technically impossible to read a message contents from a transaction. And yes, because of this, it is impossible to send a notification with a message preview. No.
+- Your device token is unique for each application on your device. We can't magically find your facebook page with your device token, generated for the Adamant app.
+- New device token generated each time you reinstall an app, or just reenable notifications. Yes, you can just disable notifications, and a device token in Service's database becomes useless. Next time Service will try to send a push notification, Apple will tell that the token is broken. That's all.
+- We do have plans to implement 'auto-renew-token' feature on client-side. Later.
+- Device tokens database will not be published. It's a "classic" centralised service, with open-source codebase and hidden production database. If you don't like this idea — you can use ADAMANT without "real" pushes, it's up to you. 
+- We *may* change this later, if we find a better solution.
 
 #### iOS App Badge?
 Yeah, it is a nice iOS feature to show amount of unread messages. In iOS, this number of sended to you messenges is not handled by an application, as application can be even closed and unloaded from memory at the moment. Service does not know how many messages you haven't read. So, right now, it is impossible to show a real number on a badge. Workaround — just show '1'. Symbols like '\*' not supported by iOS, only integers.
@@ -41,3 +41,5 @@ Want to try it out? There is no windows or buttons, just console, so it's boring
 3. Open terminal/console/cmd and type `dotnet restore` in solution's folder, or just open solution in [Visual Studio](https://www.visualstudio.com) (there is one for macOS now).
 4. Later we'll add here a step for initializing a database.
 5. Launch ANSRegistrationService and ANSPollingWorker.
+
+By the way, you will need a certificate to send a push notification to APNs, which you can grab from your Apple Developer account.
