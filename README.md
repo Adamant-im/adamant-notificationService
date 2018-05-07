@@ -30,7 +30,7 @@ In short:
 - We *may* change this later, if we find a better solution.
 
 #### iOS App Badge?
-Yeah, it is a nice iOS feature to show amount of unread messages. In iOS, this number of sended to you messenges is not handled by an application, as application can be even closed and unloaded from memory at the moment. Service does not know how many messages you haven't read. So, right now, it is impossible to show a real number on a badge. Workaround — just show '1'. Symbols like '\*' not supported by iOS, only integers.
+In iOS, app's badge number is sent to you by a server as a part of a push notification, it's not handled by an application, as application can be even terminated and unloaded from memory at the moment. Adamant, and ANS in particular, does not know how many messages you haven't read. At the moment, it is impossible to show a real number on the app's badge. Workaround — just show '1'. Symbols like '\*' not supported by iOS, only integers.
 
 We have plans and ideas how to implement this, stay tuned.
 
