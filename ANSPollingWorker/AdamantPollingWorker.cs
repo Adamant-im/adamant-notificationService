@@ -41,8 +41,6 @@ namespace Adamant.NotificationService.PollingWorker
 			{
 				Console.WriteLine("Warming up, getting current top height.");
 
-				var task = AdamantApi.GetChatTransactions(0, 0);
-
 				var transactions = await AdamantApi.GetChatTransactions(0, 0);
 
 				var newest = transactions.FirstOrDefault();
