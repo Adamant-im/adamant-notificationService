@@ -5,7 +5,7 @@ using Adamant.NotificationService.DataContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
-namespace ANSDataContextHelper
+namespace Adamant.NotificationService.DataContext
 {
 	class Program
 	{
@@ -18,11 +18,10 @@ namespace ANSDataContextHelper
 
 			var connectionString = configuration.GetConnectionString("Devices");
 			var optionsBuilder = new DbContextOptionsBuilder<DevicesContext>();
-			optionsBuilder.UseSqlite(connectionString, b => b.MigrationsAssembly("ANSDataContextHelper"));
+			optionsBuilder.UseSqlite(connectionString);
 
 			var context = new DevicesContext(optionsBuilder.Options);
-
-			Console.WriteLine("Total devices in DB: {0}", context.Devices.Count());
+			Console.WriteLine("Total registered devices: {0}", context.Devices.Count());
 		}
 	}
 }

@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ANSDataContext\ANSDataContext.csproj" />
     <ProjectReference Include="..\ANSCore\ANSCore.csproj" />
+    <ProjectReference Include="..\ANSDataContext\ANSDataContext.csproj" />
   </ItemGroup>
 </Project>
