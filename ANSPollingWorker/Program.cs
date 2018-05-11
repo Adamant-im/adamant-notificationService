@@ -34,7 +34,7 @@ namespace Adamant.NotificationService.PollingWorker
 
 			#region DataContext
 
-			var context = DevicesContext.CreateContextWithSQLite(connectionString);
+			var context = new DevicesContext(connectionString);
 			Console.WriteLine("Total registered devices: {0}", context.Devices.Count());
 
 			#endregion
