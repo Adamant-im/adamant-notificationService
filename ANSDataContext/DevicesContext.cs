@@ -38,7 +38,8 @@ namespace Adamant.NotificationService.DataContext
 		private static DbContextOptions<DevicesContext> OptionsWithConnectionString(string connectionString)
 		{
 			var optionsBuilder = new DbContextOptionsBuilder<DevicesContext>();
-			optionsBuilder.UseSqlite(connectionString);
+			//optionsBuilder.UseSqlite(connectionString);
+			optionsBuilder.UseMySQL(connectionString);
 			return optionsBuilder.Options;
 		}
 
