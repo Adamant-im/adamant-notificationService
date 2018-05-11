@@ -7,26 +7,41 @@ namespace Adamant.NotificationService.DataContext
 {
 	public class DevicesContext: DbContext
 	{
-		public DevicesContext(DbContextOptions<DevicesContext> options) : base(options)
-		{
-		}
-
-		public DevicesContext() : base(OptionsWithConnectionString("appsettings.json"))
-		{
-		}
-
 		public DbSet<Device> Devices { get; set; }
+		
+		#region Ctor
 
-		private static DbContextOptions<DevicesContext> OptionsWithConnectionString(string json) {
+		public DevicesContext(DbContextOptions<DevicesContext> options) : base(options)
+		{}
+		
+		public DevicesContext(string connectionString): base(OptionsWithConnectionString(connectionString))
+		{}
+		
+		public DevicesContext() : base(OptionsFromConfigurationFile("appsettings.json"))
+		{}
+		
+		#endregion
+
+		#region Internal
+
+		private static DbContextOptions<DevicesContext> OptionsFromConfigurationFile(string json)
+		{
 			var builder = new ConfigurationBuilder()
 				.SetBasePath(Directory.GetCurrentDirectory())
 				.AddJsonFile(json, optional: false, reloadOnChange: true);
 			var configuration = builder.Build();
 
 			var connectionString = configuration.GetConnectionString("Devices");
+			return OptionsWithConnectionString(connectionString);
+		}
+
+		private static DbContextOptions<DevicesContext> OptionsWithConnectionString(string connectionString)
+		{
 			var optionsBuilder = new DbContextOptionsBuilder<DevicesContext>();
 			optionsBuilder.UseSqlite(connectionString);
 			return optionsBuilder.Options;
 		}
+
+		#endregion
 	}
 }
