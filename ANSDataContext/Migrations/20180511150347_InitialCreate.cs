@@ -13,7 +13,7 @@ namespace Adamant.NotificationService.DataContext.Migrations
                 columns: table => new
                 {
                     ID = table.Column<int>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                        .Annotation("MySQL:AutoIncrement", true),
                     Address = table.Column<string>(nullable: true),
                     RegistrationDate = table.Column<DateTime>(nullable: false),
                     Token = table.Column<string>(nullable: true)

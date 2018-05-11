@@ -24,4 +24,10 @@
     <ProjectReference Include="..\AdamantCore\AdamantCore.csproj" />
     <ProjectReference Include="..\ANSCore\ANSCore.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Remove="database.db" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Migrations\20180511092231_InitialCreate.cs" />
+  </ItemGroup>
 </Project>
