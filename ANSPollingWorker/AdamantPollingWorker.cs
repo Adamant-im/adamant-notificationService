@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Adamant.Api;
@@ -25,6 +26,7 @@ namespace Adamant.NotificationService.PollingWorker
 		#region Properties
 
 		private CancellationTokenSource _tokenSource;
+		public Task PollingTask { get; private set; }
 
 		public int LastHeight { get; private set; }
 		public TimeSpan Delay { get; set; }
@@ -33,10 +35,26 @@ namespace Adamant.NotificationService.PollingWorker
 
 		#region Polling
 
-		public async void StartPolling(bool warmup)
+		public void StartPolling(bool warmup)
 		{
 			Console.WriteLine("Start polling");
 
+			_tokenSource = new CancellationTokenSource();
+			PollingTask = UpdateTransactionsLoop(warmup, _tokenSource.Token);
+		}
+
+		public void StopPolling()
+		{
+			Console.WriteLine("Stop polling");
+			_tokenSource?.Cancel();
+		}
+
+		#endregion
+
+		#region Polling logic
+
+		private async Task UpdateTransactionsLoop(bool warmup, CancellationToken token)
+		{
 			if (warmup)
 			{
 				Console.WriteLine("Warming up, getting current top height.");
@@ -54,25 +72,6 @@ namespace Adamant.NotificationService.PollingWorker
 					Console.WriteLine("No transactions received, starting from height 0");
 			}
 
-			_tokenSource = new CancellationTokenSource();
-
-			#pragma warning disable 4014
-			Task.Run(() => UpdateTransactionsLoop(_tokenSource.Token), _tokenSource.Token);
-			#pragma warning restore 4014
-		}
-
-		public void StopPolling()
-		{
-			Console.WriteLine("Stop polling");
-			_tokenSource?.Cancel();
-		}
-
-		#endregion
-
-		#region Polling logic
-
-		private async Task UpdateTransactionsLoop(CancellationToken token)
-		{
 			while (!token.IsCancellationRequested)
 			{
 				Console.WriteLine("Updating... Last height: {0}", LastHeight);
