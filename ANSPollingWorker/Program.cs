@@ -26,6 +26,7 @@ namespace Adamant.NotificationService.PollingWorker
 			var configuration = builder.Build();
 
 			var connectionString = configuration.GetConnectionString("Devices");
+			var provider = configuration["Database:Provider"];
 
 			if (!int.TryParse(configuration["PollingOptions:Delay"], out int delay))
 				delay = 2000;
@@ -37,7 +38,7 @@ namespace Adamant.NotificationService.PollingWorker
 
 			#region DataContext
 
-			var context = new DevicesContext(connectionString);
+			var context = new DevicesContext(connectionString, provider);
 			Console.WriteLine("Total registered devices: {0}", context.Devices.Count());
 
 			#endregion

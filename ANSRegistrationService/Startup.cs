@@ -20,7 +20,21 @@ namespace Adamant.NotificationService.RegistrationService
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
 		{
-			services.AddDbContext<DevicesContext>(opt => opt.UseMySQL(Configuration.GetConnectionString("Devices")));
+			var connectionString = Configuration.GetConnectionString("Devices");
+			var provider = Configuration["Database:Provider"];
+
+			switch (provider)
+			{
+				case null:
+				case "mysql":
+					services.AddDbContext<DevicesContext>(opt => opt.UseMySQL(connectionString));
+					break;
+
+				case "sqlite":
+					services.AddDbContext<DevicesContext>(opt => opt.UseSqlite(connectionString));
+					break;
+			}
+
 			services.AddMvc();
 		}
 

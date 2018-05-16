@@ -14,7 +14,7 @@ namespace Adamant.NotificationService.DataContext
 		public DevicesContext(DbContextOptions<DevicesContext> options) : base(options)
 		{}
 		
-		public DevicesContext(string connectionString): base(OptionsWithConnectionString(connectionString))
+		public DevicesContext(string connectionString, string provider): base(OptionsWithConnectionString(connectionString, provider))
 		{}
 		
 		public DevicesContext() : base(OptionsFromConfigurationFile("appsettings.json"))
@@ -32,14 +32,26 @@ namespace Adamant.NotificationService.DataContext
 			var configuration = builder.Build();
 
 			var connectionString = configuration.GetConnectionString("Devices");
-			return OptionsWithConnectionString(connectionString);
+			var provider = configuration["Database:Provider"];
+			return OptionsWithConnectionString(connectionString, provider);
 		}
 
-		private static DbContextOptions<DevicesContext> OptionsWithConnectionString(string connectionString)
+		private static DbContextOptions<DevicesContext> OptionsWithConnectionString(string connectionString, string provider)
 		{
 			var optionsBuilder = new DbContextOptionsBuilder<DevicesContext>();
-			//optionsBuilder.UseSqlite(connectionString);
-			optionsBuilder.UseMySQL(connectionString);
+
+			switch (provider.ToLower())
+			{
+				case null:
+				case "mysql":
+					optionsBuilder.UseMySQL(connectionString);
+					break;
+
+				case "sqlite":
+					optionsBuilder.UseSqlite(connectionString);
+					break;
+			}
+
 			return optionsBuilder.Options;
 		}
 
