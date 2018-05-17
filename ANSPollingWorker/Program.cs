@@ -7,12 +7,20 @@ using Adamant.Api;
 using Adamant.NotificationService.ApplePusher;
 using Adamant.NotificationService.DataContext;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using NLog.Extensions.Logging;
 
 namespace Adamant.NotificationService.PollingWorker
 {
 	class Program
 	{
+		#region Properties
+
+		private static NLog.ILogger _logger;
 		private static readonly HttpClient client = new HttpClient();
+
+		#endregion
 
 		static async Task Main()
 		{
@@ -36,31 +44,52 @@ namespace Adamant.NotificationService.PollingWorker
 
 			#endregion
 
-			#region DataContext
+			#region Services
 
+			// Data context
 			var context = new DevicesContext(connectionString, provider);
-			Console.WriteLine("Total registered devices: {0}", context.Devices.Count());
 
-			#endregion
-
-			#region Initializing worker
-
-			var applePusher = new Pusher { Configuration = configuration };
+			// API
 			var api = new AdamantApi(configuration);
-			var worker = new AdamantPollingWorker
-			{
-				Delay = TimeSpan.FromMilliseconds(delay),
-				Pusher = applePusher,
-				AdamantApi = api,
-				Context = context
-			};
 
 			#endregion
 
-			Console.WriteLine("Starting polling. Delay: {0}ms.", delay);
+			#region DI & NLog
 
+			_logger = NLog.LogManager.LoadConfiguration("nlog.config").GetCurrentClassLogger();
+
+			var services = new ServiceCollection();
+
+			// Application services
+
+			services.AddSingleton<IConfiguration>(configuration);
+			services.AddSingleton<AdamantApi>();
+			services.AddSingleton(typeof(IPusher), typeof(Pusher));
+			services.AddSingleton(context);
+
+			services.AddSingleton<AdamantPollingWorker>();
+
+			// Other
+			services.AddSingleton<ILoggerFactory, LoggerFactory>();
+			services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
+			services.AddLogging(b => b.SetMinimumLevel(LogLevel.Trace));
+
+			var serviceProvider = services.BuildServiceProvider();
+
+			var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+
+			loggerFactory.AddNLog(new NLogProviderOptions { CaptureMessageTemplates = true, CaptureMessageProperties = true });
+
+			#endregion
+
+			var totalDevices = context.Devices.Count();
+			_logger.Info("Database initialized. Total devices in db: {0}", totalDevices);
+			_logger.Info("Starting polling. Delay: {0}ms.", delay);
+
+			var applePusher = serviceProvider.GetRequiredService<IPusher>();
+			var worker = serviceProvider.GetRequiredService<AdamantPollingWorker>();
 			applePusher.Start();
-
+			worker.Delay = TimeSpan.FromMilliseconds(delay);
 			worker.StartPolling(warmup);
 
 			if (worker.PollingTask != null)
@@ -73,10 +102,10 @@ namespace Adamant.NotificationService.PollingWorker
 			}
 		}
 
+		// Log all unhandled exceptions
 		static void Global_UnhandledException(object sender, UnhandledExceptionEventArgs e)
 		{
-			Console.WriteLine("Fatal error: Unhadled exception: {0}", e.ExceptionObject);
+			_logger.Fatal(e.ExceptionObject);
 		}
-
 	}
 }
