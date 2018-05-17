@@ -36,9 +36,9 @@ namespace Adamant.NotificationService.RegistrationService.Controllers
 
 
 			// Drop previous registration, if exist
-			var prevDevice = _context.Devices.FirstOrDefault(d => d.Token == request.Token);
+			var prevDevice = _context.Devices.FirstOrDefault(d => d.Token == request.Token && d.Address == request.Address);
 			if (prevDevice != null)
-				_context.Devices.Remove(prevDevice);
+				return Ok();
 
 
 			// Add new device
