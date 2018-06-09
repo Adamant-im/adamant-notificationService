@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Adamant.Api;
 using Adamant.NotificationService.ApplePusher;
@@ -18,7 +17,6 @@ namespace Adamant.NotificationService.PollingWorker
 		#region Properties
 
 		private static NLog.ILogger _logger;
-		private static readonly HttpClient client = new HttpClient();
 
 		#endregion
 
