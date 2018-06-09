@@ -5,6 +5,7 @@ using System.Linq;
 using Adamant.Models;
 using Adamant.NotificationService.Models;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using PushSharp.Apple;
 
 namespace Adamant.NotificationService.ApplePusher
@@ -13,10 +14,21 @@ namespace Adamant.NotificationService.ApplePusher
 	{
 		#region Properties
 
-		public IConfiguration Configuration { get; set; }
+		private readonly ILogger<Pusher> _logger;
+		private readonly IConfiguration _configuration;
 
 		private ApnsServiceBroker _broker;
 		private Dictionary<TransactionType, PayloadContent> _contents;
+
+		#endregion
+
+		#region Ctor
+
+		public Pusher(ILogger<Pusher> logger, IConfiguration configuration)
+		{
+			_logger = logger;
+			_configuration = configuration;
+		}
 
 		#endregion
 
@@ -24,8 +36,8 @@ namespace Adamant.NotificationService.ApplePusher
 
 		public void Start()
 		{
-			_contents = LoadPayloadContent(Configuration);
-			_broker = CreateBroker(Configuration);
+			_contents = LoadPayloadContent(_configuration);
+			_broker = CreateBroker(_configuration);
 
 			if (_broker == null)
 				throw new Exception("Can't create APNs broker");

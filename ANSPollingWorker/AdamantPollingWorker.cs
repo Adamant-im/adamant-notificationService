@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Adamant.Api;
 using Adamant.Models;
 using Adamant.NotificationService.DataContext;
 using Adamant.NotificationService.Models;
+using Microsoft.Extensions.Logging;
 
 namespace Adamant.NotificationService.PollingWorker
 {
@@ -15,17 +15,17 @@ namespace Adamant.NotificationService.PollingWorker
 	{
 		#region Dependencies
 
-		public AdamantApi AdamantApi { get; set; }
-
-		public IPusher Pusher { get; set; }
-
-		public DevicesContext Context { get; set; }
+		private readonly ILogger<AdamantPollingWorker> _logger;
+		private readonly AdamantApi _adamantApi;
+		private readonly DevicesContext _context;
+		private readonly IPusher _pusher;
 
 		#endregion
 
 		#region Properties
 
 		private CancellationTokenSource _tokenSource;
+
 		public Task PollingTask { get; private set; }
 
 		public int LastHeight { get; private set; }
@@ -33,11 +33,23 @@ namespace Adamant.NotificationService.PollingWorker
 
 		#endregion
 
+		#region Ctor
+
+		public AdamantPollingWorker(ILogger<AdamantPollingWorker> logger, AdamantApi api, IPusher pusher, DevicesContext context)
+		{
+			_logger = logger;
+			_adamantApi = api;
+			_context = context;
+			_pusher = pusher;
+		}
+
+		#endregion
+
 		#region Polling
 
 		public void StartPolling(bool warmup)
 		{
-			Console.WriteLine("Start polling");
+			_logger.LogInformation("Start polling");
 
 			_tokenSource = new CancellationTokenSource();
 			PollingTask = UpdateTransactionsLoop(warmup, _tokenSource.Token);
@@ -45,7 +57,7 @@ namespace Adamant.NotificationService.PollingWorker
 
 		public void StopPolling()
 		{
-			Console.WriteLine("Stop polling");
+			_logger.LogInformation("Stop polling");
 			_tokenSource?.Cancel();
 		}
 
@@ -57,28 +69,36 @@ namespace Adamant.NotificationService.PollingWorker
 		{
 			if (warmup)
 			{
-				Console.WriteLine("Warming up, getting current top height.");
+				_logger.LogInformation("Warming up, getting current top height.");
 
-				var transactions = await AdamantApi.GetChatTransactions(0, 0);
+				var transactions = await _adamantApi.GetChatTransactions(0, 0);
 
 				var newest = transactions.FirstOrDefault();
 
 				if (newest != null)
 				{
 					LastHeight = newest.Height;
-					Console.WriteLine("Received last height: {0}", LastHeight);
+					_logger.LogInformation("Received last height: {0}", LastHeight);
 				}
 				else
-					Console.WriteLine("No transactions received, starting from height 0");
+					_logger.LogInformation("No transactions received, starting from height 0");
 			}
+
+			_logger.LogInformation("Begin polling from {0}", LastHeight);
 
 			while (!token.IsCancellationRequested)
 			{
-				Console.WriteLine("Updating... Last height: {0}", LastHeight);
-				var transactions = await AdamantApi.GetChatTransactions(0, LastHeight);
+				_logger.LogDebug("Updating... Last height: {0}", LastHeight);
+				var transactions = await _adamantApi.GetChatTransactions(0, LastHeight);
 
 				if (transactions != null && transactions.Any())
 				{
+					#if DEBUG
+					_logger.LogDebug("Got {0} new transactions", transactions.Count());
+					#else
+					_logger.LogDebug("Got new transactions");
+					#endif
+
 					var maxHeight = transactions.Max(t => t.Height);
 					if (LastHeight < maxHeight)
 						LastHeight = maxHeight;
@@ -105,7 +125,7 @@ namespace Adamant.NotificationService.PollingWorker
 				if (string.IsNullOrWhiteSpace(address))
 					continue;
 				
-				var registeredDevices = Context.Devices.Where(d => d.Address.Equals(recipient.Key));
+				var registeredDevices = _context.Devices.Where(d => d.Address.Equals(recipient.Key));
 
 
 				// TODO: Проверять на дубликаты, добавлять транзакции в имеющиеся коллекции
@@ -120,7 +140,7 @@ namespace Adamant.NotificationService.PollingWorker
 
 			foreach (var device in devicesToNotify)
 			{
-				var task = new Task(() => Pusher.NotifyDevice(device.Key, device.Value));
+				var task = new Task(() => _pusher.NotifyDevice(device.Key, device.Value));
 				task.Start();
 			}
 		}
