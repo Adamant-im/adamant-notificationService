@@ -1,7 +1,7 @@
 
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ANSPollingWorker", "ANSPollingWorker\ANSPollingWorker.csproj", "{AAC036DE-835F-40D4-A252-3FE32D224F68}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ANSChatPollingWorker", "ANSChatPollingWorker\ANSChatPollingWorker.csproj", "{AAC036DE-835F-40D4-A252-3FE32D224F68}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ANSApplePusher", "ANSApplePusher\ANSApplePusher.csproj", "{CEF11B9D-4DCC-4B45-BA2E-7651CB347FBF}"
 EndProject
@@ -17,7 +17,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NotificationService", "Noti
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ANSDataContext", "ANSDataContext\ANSDataContext.csproj", "{D97E604C-DF2C-4AF3-9AF2-2D0766A8E7ED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ANSSignalPollingWorker", "ANSSignalPollingWorker\ANSSignalPollingWorker.csproj", "{F16F2B33-34E7-4F15-9587-72B91D39024E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ANSSignalsRegistration", "ANSSignalsRegistration\ANSSignalsRegistration.csproj", "{F16F2B33-34E7-4F15-9587-72B91D39024E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdamantEncryption.Tests", "AdamantEncryption.Tests\AdamantEncryption.Tests.csproj", "{B73F2526-3D5B-418E-9110-C8068B8E7C97}"
 EndProject

@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Adamant.NotificationService.SignalPollingWorker
+namespace Adamant.NotificationService.SignalsRegistration
 {
 	public class DeviceInfo
 	{

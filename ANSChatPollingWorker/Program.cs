@@ -3,13 +3,14 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Adamant.Api;
+using Adamant.NotificationService.ApplePusher;
 using Adamant.NotificationService.DataContext;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
 
-namespace Adamant.NotificationService.SignalPollingWorker
+namespace Adamant.NotificationService.PollingWorker
 {
 	class Program
 	{
@@ -19,7 +20,7 @@ namespace Adamant.NotificationService.SignalPollingWorker
 
 		#endregion
 
-		static async Task Main(string[] args)
+		static async Task Main()
 		{
 			AppDomain.CurrentDomain.UnhandledException += Global_UnhandledException;
 
@@ -61,9 +62,10 @@ namespace Adamant.NotificationService.SignalPollingWorker
 
 			services.AddSingleton<IConfiguration>(configuration);
 			services.AddSingleton<AdamantApi>();
+			services.AddSingleton(typeof(IPusher), typeof(Pusher));
 			services.AddSingleton(context);
 
-			//services.AddSingleton<AdamantPollingWorker>();
+			services.AddSingleton<ChatsPollingWorker>();
 
 			// Other
 			services.AddSingleton<ILoggerFactory, LoggerFactory>();
@@ -82,7 +84,9 @@ namespace Adamant.NotificationService.SignalPollingWorker
 			_logger.Info("Database initialized. Total devices in db: {0}", totalDevices);
 			_logger.Info("Starting polling. Delay: {0}ms.", delay);
 
-			var worker = serviceProvider.GetRequiredService<SignalsPoller>();
+			var applePusher = serviceProvider.GetRequiredService<IPusher>();
+			var worker = serviceProvider.GetRequiredService<ChatsPollingWorker>();
+			applePusher.Start();
 			worker.Delay = TimeSpan.FromMilliseconds(delay);
 			worker.StartPolling(warmup);
 

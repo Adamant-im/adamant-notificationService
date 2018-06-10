@@ -10,21 +10,23 @@ using Adamant.NotificationService.Models;
 using System.Security.Cryptography;
 using Adamant.NotificationService.DataContext;
 
-namespace Adamant.NotificationService.SignalPollingWorker
+namespace Adamant.NotificationService.SignalsRegistration
 {
 	public class SignalsPoller: PollingWorkerBase<Transaction>
 	{
 		#region Dependencies
 
 		private readonly AdamantApi _adamantApi;
-		private readonly DevicesContext _devicesContext;
+		private readonly DevicesContext _context;
 
 		#endregion
 
 		#region Ctor
 
-		protected SignalsPoller(ILogger<PollingWorkerBase<Transaction>> logger) : base(logger)
+		protected SignalsPoller(ILogger<PollingWorkerBase<Transaction>> logger, AdamantApi api, DevicesContext context) : base(logger)
 		{
+			_adamantApi = api;
+			_context = context;
 		}
 
 		#endregion
@@ -97,8 +99,8 @@ namespace Adamant.NotificationService.SignalPollingWorker
 			}
 
 			try {
-				_devicesContext.AddRange(devices);
-				_devicesContext.SaveChanges();
+				_context.AddRange(devices);
+				_context.SaveChanges();
 			} catch (Exception e) {
 				Logger.LogCritical(e, "Failed to save context");
 			}

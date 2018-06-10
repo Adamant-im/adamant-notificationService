@@ -3,7 +3,8 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <RootNamespace>Adamant.NotificationService.SignalPollingWorker</RootNamespace>
+    <RootNamespace>Adamant.NotificationService.SignalsRegistration</RootNamespace>
+    <AssemblyName>ANSSignalPollingWorker</AssemblyName>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

@@ -11,11 +11,11 @@ using Microsoft.Extensions.Logging;
 
 namespace Adamant.NotificationService.PollingWorker
 {
-	public class AdamantPollingWorker
+	public class ChatsPollingWorker
 	{
 		#region Dependencies
 
-		private readonly ILogger<AdamantPollingWorker> _logger;
+		private readonly ILogger<ChatsPollingWorker> _logger;
 		private readonly AdamantApi _adamantApi;
 		private readonly DevicesContext _context;
 		private readonly IPusher _pusher;
@@ -35,7 +35,7 @@ namespace Adamant.NotificationService.PollingWorker
 
 		#region Ctor
 
-		public AdamantPollingWorker(ILogger<AdamantPollingWorker> logger, AdamantApi api, IPusher pusher, DevicesContext context)
+		public ChatsPollingWorker(ILogger<ChatsPollingWorker> logger, AdamantApi api, IPusher pusher, DevicesContext context)
 		{
 			_logger = logger;
 			_adamantApi = api;
