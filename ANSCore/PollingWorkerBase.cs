@@ -76,7 +76,7 @@ namespace Adamant.NotificationService
 			if (warmup)
 			{
 				Logger.LogInformation("Warming up, getting current top height.");
-				LastHeight = await Warmup();
+				LastHeight = await GetCurrentLastHeight();
 			}
 
 			Logger.LogInformation("Begin polling from {0}", LastHeight);
@@ -87,7 +87,8 @@ namespace Adamant.NotificationService
 
 				var transactions = await GetTransactions(LastHeight);
 
-				if (transactions == null || transactions.Count == 0) {
+				if (transactions == null || transactions.Count == 0)
+				{
 					continue;
 				}
 
@@ -116,10 +117,14 @@ namespace Adamant.NotificationService
 			return list;
 		}
 
+		#endregion
+
+		#region Abstract
+
 		/// <summary>
 		/// Get current latest height.
 		/// </summary>
-		protected abstract Task<int> Warmup();
+		protected abstract Task<int> GetCurrentLastHeight();
 
 		/// <summary>
 		/// Processes received new transactions. This method should return new last height.

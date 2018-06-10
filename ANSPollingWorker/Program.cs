@@ -65,7 +65,7 @@ namespace Adamant.NotificationService.PollingWorker
 			services.AddSingleton(typeof(IPusher), typeof(Pusher));
 			services.AddSingleton(context);
 
-			services.AddSingleton<ChatsPollingWorker>();
+			services.AddSingleton<ChatPollingWorker>();
 
 			// Other
 			services.AddSingleton<ILoggerFactory, LoggerFactory>();
@@ -85,7 +85,7 @@ namespace Adamant.NotificationService.PollingWorker
 			_logger.Info("Starting polling. Delay: {0}ms.", delay);
 
 			var applePusher = serviceProvider.GetRequiredService<IPusher>();
-			var worker = serviceProvider.GetRequiredService<ChatsPollingWorker>();
+			var worker = serviceProvider.GetRequiredService<ChatPollingWorker>();
 			applePusher.Start();
 			worker.Delay = TimeSpan.FromMilliseconds(delay);
 			worker.StartPolling(warmup);
