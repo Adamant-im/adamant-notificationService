@@ -57,7 +57,7 @@ namespace Adamant.Api
 
 		#region Public Methods
 
-		public async Task<IEnumerable<Transaction>> GetTransactions(int height, int offset)
+		public async Task<IEnumerable<Transaction>> GetTransactions(int height, int offset, TransactionType? type)
 		{
 			var query = new Dictionary<string, string>
 			{
@@ -70,6 +70,9 @@ namespace Adamant.Api
 
 			if (height > 0)
 				query.Add("fromHeight", height.ToString());
+
+			if (type.HasValue)
+				query.Add("type", type.Value.ToString("0"));
 
 			var endpoint = BuildEndpoint(CurrentServer, getTransactions, query);
 

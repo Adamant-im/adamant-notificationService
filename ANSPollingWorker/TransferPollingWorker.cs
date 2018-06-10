@@ -8,21 +8,21 @@ using Microsoft.Extensions.Logging;
 
 namespace Adamant.NotificationService.PollingWorker
 {
-	public class ChatPollingWorker: TransactionsPollingWorkerBase
+	public class TransferPollingWorker: TransactionsPollingWorkerBase
 	{
-		protected ChatPollingWorker(ILogger<ChatPollingWorker> logger, AdamantApi api, IPusher pusher, DevicesContext context) : base(logger, api, pusher, context)
+		public TransferPollingWorker(ILogger<TransferPollingWorker> logger, AdamantApi api, IPusher pusher, DevicesContext context) : base(logger, api, pusher, context)
 		{
 		}
-		
+
 		protected override async Task<int> GetCurrentLastHeight()
 		{
-			var transactions = await _adamantApi.GetTransactions(0, 0, TransactionType.ChatMessage);
+			var transactions = await _adamantApi.GetTransactions(0, 0, TransactionType.Send);
 			return transactions?.FirstOrDefault()?.Height ?? 0;
 		}
 
 		protected override async Task<IEnumerable<Transaction>> GetNewTransactions(int height, int offset = 0)
 		{
-			return await _adamantApi.GetChatTransactions(height, offset);
+			return await _adamantApi.GetTransactions(height, offset, TransactionType.Send);
 		}
 	}
 }
