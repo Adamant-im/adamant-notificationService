@@ -82,18 +82,18 @@ namespace Adamant.NotificationService.SignalPollingWorker
 			_logger.Info("Database initialized. Total devices in db: {0}", totalDevices);
 			_logger.Info("Starting polling. Delay: {0}ms.", delay);
 
-			//var worker = serviceProvider.GetRequiredService<AdamantPollingWorker>();
-			//worker.Delay = TimeSpan.FromMilliseconds(delay);
-			//worker.StartPolling(warmup);
+			var worker = serviceProvider.GetRequiredService<SignalsPoller>();
+			worker.Delay = TimeSpan.FromMilliseconds(delay);
+			worker.StartPolling(warmup);
 
-			//if (worker.PollingTask != null)
-			//{
-			//	await worker.PollingTask;
-			//}
-			//else
-			//{
-			//	throw new Exception("Can't await worker");
-			//}
+			if (worker.PollingTask != null)
+			{
+				await worker.PollingTask;
+			}
+			else
+			{
+				throw new Exception("Can't await worker");
+			}
 		}
 
 		// Log all unhandled exceptions

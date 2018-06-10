@@ -88,13 +88,12 @@ namespace Adamant.NotificationService
 				var transactions = await GetTransactions(LastHeight);
 
 				if (transactions == null || transactions.Count == 0) {
-					Logger.LogDebug("No new transactions");
-					break;
+					continue;
 				}
 
-				Logger.LogDebug("Got {0} new transactions, processing", transactions.Count);
-
-				ProcessNewTransactions(transactions);
+				Logger.LogInformation("Got {0} new transactions, processing", transactions.Count);
+				LastHeight = ProcessNewTransactions(transactions);
+				Logger.LogInformation("New lastHeight: {0}", LastHeight);
 
 				await Task.Delay(Delay);
 			}
@@ -123,10 +122,11 @@ namespace Adamant.NotificationService
 		protected abstract Task<int> Warmup();
 
 		/// <summary>
-		/// Processes received new transactions.
+		/// Processes received new transactions. This method should return new last height.
 		/// </summary>
 		/// <param name="transactions">New transactions.</param>
-		protected abstract void ProcessNewTransactions(IEnumerable<T> transactions);
+		/// <returns>Last height</returns>
+		protected abstract int ProcessNewTransactions(IEnumerable<T> transactions);
 
 		/// <summary>
 		/// Gets the new transactions from API.
