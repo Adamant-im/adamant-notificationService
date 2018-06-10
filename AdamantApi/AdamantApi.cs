@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -58,7 +57,7 @@ namespace Adamant.Api
 
 		#region Public Methods
 
-		public async Task<IEnumerable<Transaction>> GetTransactions(int offset, int height)
+		public async Task<IEnumerable<Transaction>> GetTransactions(int height, int offset, TransactionType? type)
 		{
 			var query = new Dictionary<string, string>
 			{
@@ -72,13 +71,16 @@ namespace Adamant.Api
 			if (height > 0)
 				query.Add("fromHeight", height.ToString());
 
+			if (type.HasValue)
+				query.Add("type", type.Value.ToString("0"));
+
 			var endpoint = BuildEndpoint(CurrentServer, getTransactions, query);
 
 			var results = await GetResponse<TransactionsResponse>(endpoint);
 			return results.Transactions;
 		}
 
-		public async Task<IEnumerable<Transaction>> GetChatTransactions(int offset, int height, ChatType? chatType = null)
+		public async Task<IEnumerable<Transaction>> GetChatTransactions(int height, int offset, ChatType? chatType = null)
 		{
 			var query = new Dictionary<string, string>
 			{

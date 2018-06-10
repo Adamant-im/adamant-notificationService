@@ -1,7 +1,7 @@
 
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ANSChatPollingWorker", "ANSChatPollingWorker\ANSChatPollingWorker.csproj", "{AAC036DE-835F-40D4-A252-3FE32D224F68}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ANSPollingWorker", "ANSPollingWorker\ANSPollingWorker.csproj", "{AAC036DE-835F-40D4-A252-3FE32D224F68}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ANSApplePusher", "ANSApplePusher\ANSApplePusher.csproj", "{CEF11B9D-4DCC-4B45-BA2E-7651CB347FBF}"
 EndProject

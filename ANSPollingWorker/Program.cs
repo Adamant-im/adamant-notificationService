@@ -20,7 +20,7 @@ namespace Adamant.NotificationService.PollingWorker
 
 		#endregion
 
-		static async Task Main()
+		static void Main()
 		{
 			AppDomain.CurrentDomain.UnhandledException += Global_UnhandledException;
 
@@ -65,7 +65,9 @@ namespace Adamant.NotificationService.PollingWorker
 			services.AddSingleton(typeof(IPusher), typeof(Pusher));
 			services.AddSingleton(context);
 
-			services.AddSingleton<ChatsPollingWorker>();
+			// Polling workers
+			services.AddSingleton<ChatPollingWorker>();
+			services.AddSingleton<TransferPollingWorker>();
 
 			// Other
 			services.AddSingleton<ILoggerFactory, LoggerFactory>();
@@ -85,19 +87,17 @@ namespace Adamant.NotificationService.PollingWorker
 			_logger.Info("Starting polling. Delay: {0}ms.", delay);
 
 			var applePusher = serviceProvider.GetRequiredService<IPusher>();
-			var worker = serviceProvider.GetRequiredService<ChatsPollingWorker>();
 			applePusher.Start();
-			worker.Delay = TimeSpan.FromMilliseconds(delay);
-			worker.StartPolling(warmup);
 
-			if (worker.PollingTask != null)
-			{
-				await worker.PollingTask;
-			}
-			else
-			{
-				throw new Exception("Can't await worker");
-			}
+			var chatWorker = serviceProvider.GetRequiredService<ChatPollingWorker>();
+			chatWorker.Delay = TimeSpan.FromMilliseconds(delay);
+			chatWorker.StartPolling(warmup);
+
+			var transferWorker = serviceProvider.GetRequiredService<TransferPollingWorker>();
+			transferWorker.Delay = TimeSpan.FromMilliseconds(delay);
+			transferWorker.StartPolling(warmup);
+
+			Task.WaitAll(chatWorker.PollingTask, transferWorker.PollingTask);
 		}
 
 		// Log all unhandled exceptions
