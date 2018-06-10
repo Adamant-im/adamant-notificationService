@@ -7,6 +7,7 @@ namespace Adamant.NotificationService.Models
 		public int ID { get; set; }
 		public string Address { get; set; }
 		public string Token { get; set; }
+		public string Os { get; set; }
 		public DateTime RegistrationDate { get; set; }
 	}
 }

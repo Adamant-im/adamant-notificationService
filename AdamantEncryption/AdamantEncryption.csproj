@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <RootNamespace>Adamant</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="TweetNaClCore" Version="1.0.0" />
+    <PackageReference Include="Sodium.Core" Version="1.2.0" />
+  </ItemGroup>
+</Project>

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using Adamant.Api;
 using Adamant.NotificationService.DataContext;
 using Microsoft.Extensions.Configuration;
@@ -7,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
 
-namespace ANSKvsRegistrationService
+namespace Adamant.NotificationService.SignalPollingWorker
 {
 	class Program
 	{
@@ -16,7 +18,8 @@ namespace ANSKvsRegistrationService
 		private static NLog.ILogger _logger;
 
 		#endregion
-		static void Main(string[] args)
+
+		static async Task Main(string[] args)
 		{
 			AppDomain.CurrentDomain.UnhandledException += Global_UnhandledException;
 
@@ -29,6 +32,12 @@ namespace ANSKvsRegistrationService
 
 			var connectionString = configuration.GetConnectionString("Devices");
 			var provider = configuration["Database:Provider"];
+
+			if (!int.TryParse(configuration["PollingOptions:Delay"], out int delay))
+				delay = 2000;
+
+			if (!Boolean.TryParse(configuration["PollingOptions:Warmup"], out bool warmup))
+				warmup = true;
 
 			#endregion
 
@@ -54,6 +63,8 @@ namespace ANSKvsRegistrationService
 			services.AddSingleton<AdamantApi>();
 			services.AddSingleton(context);
 
+			//services.AddSingleton<AdamantPollingWorker>();
+
 			// Other
 			services.AddSingleton<ILoggerFactory, LoggerFactory>();
 			services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
@@ -66,6 +77,23 @@ namespace ANSKvsRegistrationService
 			loggerFactory.AddNLog(new NLogProviderOptions { CaptureMessageTemplates = true, CaptureMessageProperties = true });
 
 			#endregion
+
+			var totalDevices = context.Devices.Count();
+			_logger.Info("Database initialized. Total devices in db: {0}", totalDevices);
+			_logger.Info("Starting polling. Delay: {0}ms.", delay);
+
+			var worker = serviceProvider.GetRequiredService<SignalsPoller>();
+			worker.Delay = TimeSpan.FromMilliseconds(delay);
+			worker.StartPolling(warmup);
+
+			if (worker.PollingTask != null)
+			{
+				await worker.PollingTask;
+			}
+			else
+			{
+				throw new Exception("Can't await worker");
+			}
 		}
 
 		// Log all unhandled exceptions

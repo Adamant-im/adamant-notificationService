@@ -78,7 +78,7 @@ namespace Adamant.Api
 			return results.Transactions;
 		}
 
-		public async Task<IEnumerable<Transaction>> GetChatTransactions(int offset, int height)
+		public async Task<IEnumerable<Transaction>> GetChatTransactions(int offset, int height, ChatType? chatType = null)
 		{
 			var query = new Dictionary<string, string>
 			{
@@ -90,6 +90,9 @@ namespace Adamant.Api
 
 			if (height > 0)
 				query.Add("fromHeight", height.ToString());
+
+			if (chatType.HasValue)
+				query.Add("type", chatType.Value.ToString());
 
 			var endpoint = BuildEndpoint(CurrentServer, getChatTransactions, query);
 
