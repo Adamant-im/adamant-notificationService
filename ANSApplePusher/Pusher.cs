@@ -42,6 +42,9 @@ namespace Adamant.NotificationService.ApplePusher
 			if (_broker == null)
 				throw new Exception("Can't create APNs broker");
 
+			_broker.OnNotificationFailed += OnNotificationFailed;
+			_broker.OnNotificationSucceeded += OnNotificationSucceeded;
+
 			_broker.Start();
 
 			// TODO: Start feedback poller
@@ -50,6 +53,9 @@ namespace Adamant.NotificationService.ApplePusher
 		public void Stop()
 		{
 			_broker.Stop();
+
+			_broker.OnNotificationFailed -= OnNotificationFailed;
+			_broker.OnNotificationSucceeded -= OnNotificationSucceeded;
 			_broker = null;
 			_contents = null;
 		}
@@ -98,6 +104,36 @@ namespace Adamant.NotificationService.ApplePusher
 
 		#endregion
 
+		#region Logging
+
+		private void OnNotificationSucceeded(ApnsNotification notification)
+		{
+			_logger.LogDebug("Apple Notification Sent. Device: {0}. Payload: {1}", notification.DeviceToken, notification.Payload);
+		}
+
+		private void OnNotificationFailed(ApnsNotification notification, AggregateException aggregateEx)
+		{
+			aggregateEx.Handle(ex =>
+			{
+				if (ex is ApnsNotificationException notificationException)
+				{
+					var apnsNotification = notificationException.Notification;
+					var statusCode = notificationException.ErrorStatusCode;
+
+					_logger.LogError(notificationException, "Apple Notification Failed: ID={0}, Code={1}, Token={2}, Payload={3}", apnsNotification.Identifier, statusCode, notification.DeviceToken, notification.Payload);
+				}
+				else
+				{
+					_logger.LogError(ex.InnerException, "Apple Notification Failed for some unknown reason, Token={0}, Payload={1}", notification.DeviceToken, notification.Payload);
+					Console.WriteLine($"Apple Notification Failed for some unknown reason : {ex.InnerException}");
+				}
+
+				return true;
+			});
+		}
+
+		#endregion
+
 		#region Tools
 
 		private static ApnsServiceBroker CreateBroker(IConfiguration configuration)
@@ -113,34 +149,7 @@ namespace Adamant.NotificationService.ApplePusher
 
 			var config = new ApnsConfiguration(ApnsConfiguration.ApnsServerEnvironment.Sandbox, certName, certPass);
 
-			var broker = new ApnsServiceBroker(config);
-
-			broker.OnNotificationFailed += (notification, aggregateEx) =>
-			{
-				aggregateEx.Handle(ex =>
-				{
-					if (ex is ApnsNotificationException notificationException)
-					{
-						var apnsNotification = notificationException.Notification;
-						var statusCode = notificationException.ErrorStatusCode;
-
-						Console.WriteLine($"Apple Notification Failed: ID={apnsNotification.Identifier}, Code={statusCode}");
-					}
-					else
-					{
-						Console.WriteLine($"Apple Notification Failed for some unknown reason : {ex.InnerException}");
-					}
-
-					return true;
-				});
-			};
-
-			broker.OnNotificationSucceeded += (notification) =>
-			{
-				Console.WriteLine("Apple Notification Sent!");
-			};
-
-			return broker;
+			return new ApnsServiceBroker(config);
 		}
 
 		private static Dictionary<TransactionType, PayloadContent> LoadPayloadContent(IConfiguration configuration)
@@ -167,6 +176,5 @@ namespace Adamant.NotificationService.ApplePusher
 		}
 
 		#endregion
-
 	}
 }
