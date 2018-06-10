@@ -92,7 +92,7 @@ namespace Adamant.Api
 				query.Add("fromHeight", height.ToString());
 
 			if (chatType.HasValue)
-				query.Add("chatType", chatType.Value.ToString());
+				query.Add("type", chatType.Value.ToString());
 
 			var endpoint = BuildEndpoint(CurrentServer, getChatTransactions, query);
 

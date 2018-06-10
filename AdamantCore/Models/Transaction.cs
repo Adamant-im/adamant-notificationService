@@ -54,6 +54,9 @@ namespace Adamant.Models
         [JsonProperty("confirmations")]
 		public UInt32? Confirmations { get; set; }
 
+		[JsonProperty("asset")]
+		public TransactionAsset Asset { get; set; }
+
 	}
 }
 
