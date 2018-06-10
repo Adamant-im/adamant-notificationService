@@ -12,10 +12,4 @@
 		OutTransfer,
 		ChatMessage,
 	}
-
-	public enum ChatType: int
-	{
-		MessageOld,
-		Message
-	}
 }
