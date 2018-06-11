@@ -75,7 +75,7 @@ namespace Adamant.NotificationService.SignalsRegistration
 					{
 						Address = trs.SenderId,
 						Token = deviceInfo.Token,
-						Os = deviceInfo.Os,
+						Provider = deviceInfo.Provider,
 						RegistrationDate = DateTime.UtcNow
 					};
 

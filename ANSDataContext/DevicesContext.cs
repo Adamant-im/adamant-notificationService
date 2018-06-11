@@ -40,7 +40,7 @@ namespace Adamant.NotificationService.DataContext
 		{
 			var optionsBuilder = new DbContextOptionsBuilder<DevicesContext>();
 
-			switch (provider.ToLower())
+			switch (provider?.ToLower())
 			{
 				case null:
 				case "mysql":
