@@ -39,6 +39,10 @@ namespace Adamant.NotificationService.SignalsRegistration
 			if (!Boolean.TryParse(configuration["PollingOptions:Warmup"], out bool warmup))
 				warmup = true;
 
+			var privateKey = configuration["SignalPoller:PrivateKey"];
+			if (string.IsNullOrEmpty(privateKey))
+				throw new Exception("Secret key is required");
+
 			#endregion
 
 			#region Services
@@ -85,6 +89,7 @@ namespace Adamant.NotificationService.SignalsRegistration
 			var worker = serviceProvider.GetRequiredService<SignalsPoller>();
 			worker.Delay = TimeSpan.FromMilliseconds(delay);
 			worker.StartPolling(warmup);
+			worker.PrivateKey = privateKey;
 
 			if (worker.PollingTask != null)
 			{

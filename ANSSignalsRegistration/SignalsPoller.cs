@@ -21,6 +21,12 @@ namespace Adamant.NotificationService.SignalsRegistration
 
 		#endregion
 
+		#region Properties
+
+		public string PrivateKey { get; set; }
+
+		#endregion
+
 		#region Ctor
 
 		protected SignalsPoller(ILogger<PollingWorkerBase<Transaction>> logger, AdamantApi api, DevicesContext context) : base(logger)
@@ -63,7 +69,7 @@ namespace Adamant.NotificationService.SignalsRegistration
 				String message = null;
 
 				try {
-					message = Encryption.DecodeMessage(chat.Message, chat.Nonce, trs.SenderPublicKey, "");
+					message = Encryption.DecodeMessage(chat.Message, chat.Nonce, trs.SenderPublicKey, PrivateKey);
 					var deviceInfo = JsonConvert.DeserializeObject<DeviceInfo>(message);
 					var device = new Device
 					{

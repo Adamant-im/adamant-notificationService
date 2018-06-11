@@ -21,8 +21,6 @@ namespace Adamant.NotificationService
 
 		public Task PollingTask { get; private set; }
 
-		public string PrivateKey { get; set; }
-
 		public int LastHeight { get; private set; }
 		public int TransactionsLimit { get; set; }
 		public TimeSpan Delay { get; set; }
