@@ -7,7 +7,7 @@ namespace Adamant.NotificationService.SignalsRegistration
 		[JsonProperty("token")]
 		public string Token { get; set; }
 
-		[JsonProperty("os")]
-		public string Os { get; set; }
+		[JsonProperty("provider")]
+		public string Provider { get; set; }
 	}
 }
