@@ -10,9 +10,10 @@ using System;
 namespace Adamant.NotificationService.DataContext.Migrations
 {
     [DbContext(typeof(DevicesContext))]
-    partial class DevicesContextModelSnapshot : ModelSnapshot
+    [Migration("20180611083124_Provider")]
+    partial class Provider
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
