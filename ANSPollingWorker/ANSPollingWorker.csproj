@@ -15,10 +15,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="PushSharp.Core" Version="1.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.1.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="2.1.0" />
     <PackageReference Include="NLog.Extensions.Logging" Version="1.1.0" />
     <PackageReference Include="NLog" Version="4.5.6" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.1.0" />
@@ -29,15 +25,7 @@
     <ProjectReference Include="..\ANSCore\ANSCore.csproj" />
     <ProjectReference Include="..\AdamantApi\AdamantApi.csproj" />
     <ProjectReference Include="..\ANSDataContext\ANSDataContext.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="appsettings.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="appsettings.json">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <ProjectReference Include="..\AdamantUtilities\AdamantUtilities.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="nlog.config">

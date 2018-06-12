@@ -141,8 +141,8 @@ namespace Adamant.NotificationService.ApplePusher
 			if (configuration == null)
 				throw new NullReferenceException("configuration");
 
-			var certName = configuration["ApplePusher:Certificate:filename"];
-			var certPass = configuration["ApplePusher:Certificate:pass"];
+			var certName = configuration["ApplePusher:Certificate:path"];
+			var certPass = configuration["ApplePusher:Certificate:pass"] ?? "";
 
 			if (string.IsNullOrEmpty(certName))
 				throw new Exception("Can't get certerficate filename from configuration");

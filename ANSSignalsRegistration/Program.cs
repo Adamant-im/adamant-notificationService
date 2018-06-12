@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Adamant.Api;
@@ -25,21 +24,19 @@ namespace Adamant.NotificationService.SignalsRegistration
 
 			#region Config
 
-			var builder = new ConfigurationBuilder()
-				.SetBasePath(Directory.GetCurrentDirectory())
-				.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-			var configuration = builder.Build();
+			var configuration = ConfigurationLoader.GetConfiguration();
 
-			var connectionString = configuration.GetConnectionString("Devices");
 			var provider = configuration["Database:Provider"];
+			var connectionName = configuration["Database:ConnectionString"] ?? "devices";
+			var connectionString = configuration.GetConnectionString(connectionName);
 
-			if (!int.TryParse(configuration["PollingOptions:Delay"], out int delay))
+			if (!int.TryParse(configuration["SignalsRegitrator:Delay"], out int delay))
 				delay = 2000;
 
-			if (!Boolean.TryParse(configuration["PollingOptions:Warmup"], out bool warmup))
+			if (!Boolean.TryParse(configuration["SignalsRegitrator:Warmup"], out bool warmup))
 				warmup = true;
 
-			var privateKey = configuration["SignalPoller:PrivateKey"];
+			var privateKey = configuration["SignalsRegitrator:PrivateKey"];
 			if (string.IsNullOrEmpty(privateKey))
 				throw new Exception("Secret key is required");
 
