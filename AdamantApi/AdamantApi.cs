@@ -41,7 +41,11 @@ namespace Adamant.Api
 
 				foreach (var raw in endpointsRaw)
 				{
-					endpoints.Add(new ServerDescription(raw["ip"], raw["protocol"], raw["port"]));
+					int? port = null;
+					if (int.TryParse(raw["port"], out var p))
+						port = p;
+
+				   endpoints.Add(new ServerDescription(raw["ip"], raw["protocol"], port));
 				}
 
 				ServersList = endpoints;

@@ -45,3 +45,43 @@ Want to try it out? There is no windows or buttons, just console, so it's boring
 6. To launch **ANSRegistrationService**, configure your **HttpServer:Endpoints** section in it's appsettings.json. Then `cd ANSRegistrationService` and `dotnet run`.
 
 You will need a certificate to send a push notifications to APNs, which you can get from your Apple Developer account.
+
+
+## Configuration
+Sample file is located in Solution root directory. Configuration file loaded from ~/.ans/config.json.
+
+#### Sections:
+- Database (optional): Section for database configuration. Params:
+    + ConnectionString (optional, default: devices). ConnectionString name. Strings specified in 'ConnectionStrings' section, see bellow.
+    + Provider (optional): Database connection provider. Two providers supported:
+        * sqlite
+        * mysql (default)
+
+- ConnectionStrings: standart dotnet section for connection strings. Active connection string name specified in Database:ConnectionString param, default is 'devices'.
+
+- Api: ADAMANT node settings.
+    + Server[]: node addresses. Properties:
+        * ip (string): node address (or ip)
+        * protocol (string, optional, default: https)
+        * port (int, optional)
+
+- PollingWroker: Polling settings. Properties:
+    + Warmup (bool, optional, default: true): Start with a warmup. If this set to true, Worker will try to fetch latest block height from ADAMANT, and then begins the loop with this height. If param set to false or warmup failed, Worker will start processing from 0, do not try this on live network.
+    + Delay (milliseconds as int, optional, default: 2000): delay between two requests.
+
+- SignalsRegistration: Signals polling & registration settings. Properties:
+    + Warmup (bool, optional, default: true): Start with a warmup. If this set to true, Worker will try to fetch latest block height from ADAMANT, and then begins the loop with this height. If param set to false or warmup failed, Worker will start processing from 0, do not try this on live network.
+    + Delay (milliseconds as int, optional, default: 2000): delay between two requests.
+
+- ApplePusher: APNS settings. Sections:
+    + Certificate. Properties:
+        * path (string): Your Apple push certificate path.
+        * pass (string, optional): passphrase for certificate.
+    + Payload[]. Apple push notifications payload. Properties:
+        * transactionType:
+            * 0: transfer
+            * 8: chat message
+        * title
+        * body
+        * sound
+

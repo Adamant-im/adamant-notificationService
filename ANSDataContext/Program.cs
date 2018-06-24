@@ -1,9 +1,6 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
-using Adamant.NotificationService.DataContext;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
 namespace Adamant.NotificationService.DataContext
 {
@@ -11,12 +8,8 @@ namespace Adamant.NotificationService.DataContext
 	{
 		static void Main(string[] args)
 		{
-			var builder = new ConfigurationBuilder()
-				.SetBasePath(Directory.GetCurrentDirectory())
-				.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-			var configuration = builder.Build();
+			var connectionString = "Data Source=database.db";
 
-			var connectionString = configuration.GetConnectionString("Devices");
 			var optionsBuilder = new DbContextOptionsBuilder<DevicesContext>();
 			optionsBuilder.UseSqlite(connectionString);
 

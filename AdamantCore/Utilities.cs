@@ -2,7 +2,7 @@
 
 namespace Adamant
 {
-	public static class AdamantUtilities
+	public static class Utilities
 	{
 		public static bool IsValidAdamantAddress(string address)
 		{

@@ -1,7 +1,5 @@
-﻿using System.IO;
-using Adamant.NotificationService.Models;
+﻿using Adamant.NotificationService.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
 namespace Adamant.NotificationService.DataContext
 {
@@ -17,24 +15,9 @@ namespace Adamant.NotificationService.DataContext
 		public DevicesContext(string connectionString, string provider): base(OptionsWithConnectionString(connectionString, provider))
 		{}
 		
-		public DevicesContext() : base(OptionsFromConfigurationFile("appsettings.json"))
-		{}
-		
 		#endregion
 
 		#region Internal
-
-		private static DbContextOptions<DevicesContext> OptionsFromConfigurationFile(string json)
-		{
-			var builder = new ConfigurationBuilder()
-				.SetBasePath(Directory.GetCurrentDirectory())
-				.AddJsonFile(json, optional: false, reloadOnChange: true);
-			var configuration = builder.Build();
-
-			var connectionString = configuration.GetConnectionString("Devices");
-			var provider = configuration["Database:Provider"];
-			return OptionsWithConnectionString(connectionString, provider);
-		}
 
 		private static DbContextOptions<DevicesContext> OptionsWithConnectionString(string connectionString, string provider)
 		{

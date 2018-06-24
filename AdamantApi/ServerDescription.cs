@@ -22,19 +22,6 @@ namespace Adamant.Api
 			Url = BuildUrl(this);
 		}
 
-		public ServerDescription(string ip, string protocol, string port)
-		{
-			Ip = ip;
-			Protocol = protocol;
-
-			if (int.TryParse(port, out int p))
-				Port = p;
-			else
-				Port = null;
-
-			Url = BuildUrl(this);
-		}
-
 		public bool Equals(ServerDescription other)
 		{
 			return Ip == other.Ip &&
