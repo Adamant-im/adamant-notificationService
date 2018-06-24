@@ -58,20 +58,28 @@ namespace Adamant.NotificationService.SignalsRegistration
 
 		protected override void ProcessNewTransactions(IEnumerable<Transaction> transactions)
 		{
+			if (transactions == null)
+			{
+				Logger.LogError("Requested to process null transactions");
+				return;
+			}
+
 			var count = transactions.Count();
 			if (count == 0) {
 				Logger.LogWarning("Requested to process 0 transactions");
 				return;
 			}
 
-			Logger.LogInformation("Processing {0} transactions.", count);
 			var devices = new List<Device>();
 
 			foreach (var trs in transactions)
 			{
 				var chat = trs.Asset?.Chat;
-				if (chat == null)
+				if (chat == null || chat.Type != ChatType.signal)
+				{
+					Logger.LogError("Processing: got transaction with wrong ChatAsset. TransactionId: {0}", trs.Id);
 					continue;
+				}
 
 				String message = null;
 
@@ -101,6 +109,29 @@ namespace Adamant.NotificationService.SignalsRegistration
 					continue;
 				} catch (Exception e) {
 					Logger.LogError(e, "Failed to read device info from message. TransactionId: {0}, message: {1}", trs.Id, message);
+					continue;
+				}
+			}
+
+			Logger.LogInformation("Processed {0} devices.", devices.Count);
+
+			var duplicates = new List<Device>();
+			foreach (var device in devices) {
+				var baseDevice = _context.Devices.FirstOrDefault(d => d.Token == device.Token &&
+				                                                 d.Address == device.Address &&
+				                                                 d.Provider == device.Provider);
+
+				if (baseDevice != null)
+					duplicates.Add(device);
+			}
+
+			if (duplicates.Count > 0) {
+
+				duplicates.ForEach(d => devices.Remove(d));
+
+				if (devices.Count == 0) {
+					Logger.LogInformation("Found {0} duplicates, nothing to save.", duplicates.Count);
+					return;
 				}
 			}
 
