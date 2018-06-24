@@ -31,16 +31,12 @@ namespace Adamant.NotificationService.SignalsRegistration
 			var connectionName = configuration["Database:ConnectionString"] ?? "devices";
 			var connectionString = configuration.GetConnectionString(connectionName);
 
-			if (!int.TryParse(configuration["SignalsRegitrator:Delay"], out int delay))
+			if (!int.TryParse(configuration["SignalsRegistration:Delay"], out int delay))
 				delay = 2000;
 
-			if (!Boolean.TryParse(configuration["SignalsRegitrator:Warmup"], out bool warmup))
+			if (!Boolean.TryParse(configuration["SignalsRegistration:Warmup"], out bool warmup))
 				warmup = true;
-
-			var privateKey = configuration["SignalsRegitrator:PrivateKey"];
-			if (string.IsNullOrEmpty(privateKey))
-				throw new Exception("Secret key is required");
-
+			
 			#endregion
 
 			#region Services
@@ -56,7 +52,7 @@ namespace Adamant.NotificationService.SignalsRegistration
 
 			#region DI & NLog
 
-			var nLogConfig = Utilities.HandleUnixHomeDirectory(configuration["PollingWorker:NlogConfig"]);
+			var nLogConfig = Utilities.HandleUnixHomeDirectory(configuration["SignalsRegistration:NlogConfig"]);
 			_logger = NLog.LogManager.LoadConfiguration(nLogConfig).GetCurrentClassLogger();
 
 			var services = new ServiceCollection();
@@ -85,6 +81,10 @@ namespace Adamant.NotificationService.SignalsRegistration
 			var totalDevices = context.Devices.Count();
 			_logger.Info("Database initialized. Total devices in db: {0}", totalDevices);
 			_logger.Info("Starting polling. Delay: {0}ms.", delay);
+
+			var privateKey = configuration["SignalsRegistration:PrivateKey"];
+			if (string.IsNullOrEmpty(privateKey))
+				throw new Exception("Secret key is required");
 
 			var worker = serviceProvider.GetRequiredService<SignalsPoller>();
 			worker.Delay = TimeSpan.FromMilliseconds(delay);
