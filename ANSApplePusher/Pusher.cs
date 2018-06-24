@@ -139,17 +139,13 @@ namespace Adamant.NotificationService.ApplePusher
 		{
 			if (configuration == null)
 				throw new NullReferenceException("configuration");
-
-			var certName = configuration["ApplePusher:Certificate:path"];
+			
+			var certName = Utilities.HandleUnixHomeDirectory(configuration["ApplePusher:Certificate:path"]);
 			var certPass = configuration["ApplePusher:Certificate:pass"] ?? "";
 
 			if (string.IsNullOrEmpty(certName))
 				throw new Exception("Can't get certerficate filename from configuration");
-
-			if (certName.Contains('~')) {
-				certName = certName.Replace("~", Environment.GetFolderPath(Environment.SpecialFolder.Personal));
-			}
-
+			
 			var config = new ApnsConfiguration(ApnsConfiguration.ApnsServerEnvironment.Sandbox, certName, certPass);
 
 			return new ApnsServiceBroker(config);
