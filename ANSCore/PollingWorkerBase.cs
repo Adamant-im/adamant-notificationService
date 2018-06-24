@@ -22,7 +22,13 @@ namespace Adamant.NotificationService
 		public Task PollingTask { get; private set; }
 
 		public int LastHeight { get; private set; }
-		public int TransactionsLimit { get; set; }
+
+		/// <summary>
+		/// Amount of transactions for every request. Default is 100.
+		/// 
+		/// Setter is not yet impletented by API.
+		/// </summary>
+		public int TransactionsLimit { get; /*set;*/ } = 100;
 		public TimeSpan Delay { get; set; }
 
 		public bool IsWorking { get; private set; }
@@ -85,14 +91,14 @@ namespace Adamant.NotificationService
 
 				var transactions = await GetTransactions(LastHeight);
 
-				if (transactions == null || transactions.Count == 0)
+				if (transactions != null && transactions.Count > 0)
 				{
-					continue;
+					Logger.LogInformation("Got {0} new transactions, processing", transactions.Count);
+					LastHeight = ProcessNewTransactions(transactions);
+					Logger.LogInformation("New lastHeight: {0}", LastHeight);
 				}
-
-				Logger.LogInformation("Got {0} new transactions, processing", transactions.Count);
-				LastHeight = ProcessNewTransactions(transactions);
-				Logger.LogInformation("New lastHeight: {0}", LastHeight);
+				else
+					Logger.LogDebug("Got 0, delay.");
 
 				await Task.Delay(Delay);
 			}
@@ -100,14 +106,13 @@ namespace Adamant.NotificationService
 
 		private async Task<List<T>> GetTransactions(int height, int offset = 0)
 		{
-			Logger.LogDebug("Getting transaction, height: {0}, offset: {1}", height, offset);
-			var transactions = await GetNewTransactions(0, height);
+			var transactions = await GetNewTransactions(height, offset);
 			var list = new List<T>(transactions);
 
 			var count = transactions.Count();
 			if (count >= TransactionsLimit)
 			{
-				Logger.LogDebug("Received {0} transactions. (h: {1}, o: {2})", count, height, offset);
+				Logger.LogDebug("Received {0} transactions. Requesting more. (h: {1}, o: {2})", count, height, offset);
 				var more = await GetTransactions(height, offset + TransactionsLimit);
 				list.AddRange(more);
 			}

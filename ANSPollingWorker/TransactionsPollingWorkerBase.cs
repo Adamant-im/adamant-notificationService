@@ -63,9 +63,9 @@ namespace Adamant.NotificationService.PollingWorker
 				_pusher.NotifyDevice(d.device, d.transactions);
 			}
 
-			// Last height
+			// Last height. API returns transactions with height >= lastHeight. So +1.
 			var newest = transactions.OrderByDescending(t => t.Height).First();
-			return newest.Height;
+			return newest.Height + 1;
 		}
 	}
 }

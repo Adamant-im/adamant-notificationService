@@ -67,15 +67,15 @@ namespace Adamant.Api
 			{
 				{ "orderBy", "timestamp:desc" }
 			};
+			
+			if (type.HasValue)
+				query.Add("type", ((int)type.Value).ToString());
+			
+			if (height > 0)
+				query.Add("and:fromHeight", height.ToString());
 
 			if (offset > 0)
 				query.Add("offset", offset.ToString());
-
-			if (height > 0)
-				query.Add("fromHeight", height.ToString());
-
-			if (type.HasValue)
-				query.Add("type", ((int)type.Value).ToString());
 			
 			var endpoint = BuildEndpoint(CurrentServer, getTransactions, query);
 
@@ -89,15 +89,15 @@ namespace Adamant.Api
 			{
 				{ "orderBy", "timestamp:desc" }
 			};
-
-			if (offset > 0)
-				query.Add("offset", offset.ToString());
-
+			
+			if (chatType.HasValue)
+				query.Add("type", ((int)chatType.Value).ToString());
+			
 			if (height > 0)
 				query.Add("fromHeight", height.ToString());
 
-			if (chatType.HasValue)
-				query.Add("type", ((int)chatType.Value).ToString());
+			if (offset > 0)
+				query.Add("offset", offset.ToString());
 
 			var endpoint = BuildEndpoint(CurrentServer, getChatTransactions, query);
 

@@ -20,7 +20,12 @@ namespace Adamant.NotificationService.PollingWorker
 		protected override async Task<int> GetCurrentLastHeight()
 		{
 			var transactions = await _adamantApi.GetTransactions(0, 0, TransactionType.Send);
-			return transactions?.FirstOrDefault()?.Height ?? 0;
+
+			var latest = transactions?.FirstOrDefault();
+			if (latest != null)
+				return latest.Height + 1;
+			else
+				return 0;
 		}
 
 		protected override async Task<IEnumerable<Transaction>> GetNewTransactions(int height, int offset = 0)
