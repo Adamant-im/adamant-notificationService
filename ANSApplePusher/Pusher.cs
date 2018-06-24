@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Adamant.Models;
 using Adamant.NotificationService.Models;
@@ -146,6 +145,10 @@ namespace Adamant.NotificationService.ApplePusher
 
 			if (string.IsNullOrEmpty(certName))
 				throw new Exception("Can't get certerficate filename from configuration");
+
+			if (certName.Contains('~')) {
+				certName = certName.Replace("~", Environment.GetFolderPath(Environment.SpecialFolder.Personal));
+			}
 
 			var config = new ApnsConfiguration(ApnsConfiguration.ApnsServerEnvironment.Sandbox, certName, certPass);
 

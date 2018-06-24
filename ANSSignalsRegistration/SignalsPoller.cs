@@ -29,7 +29,9 @@ namespace Adamant.NotificationService.SignalsRegistration
 
 		#region Ctor
 
-		protected SignalsPoller(ILogger<PollingWorkerBase<Transaction>> logger, AdamantApi api, DevicesContext context) : base(logger)
+		public SignalsPoller(ILogger<PollingWorkerBase<Transaction>> logger,
+		                     AdamantApi api,
+		                     DevicesContext context) : base(logger)
 		{
 			_adamantApi = api;
 			_context = context;

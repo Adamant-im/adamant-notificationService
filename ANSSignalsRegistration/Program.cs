@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Adamant.Api;
 using Adamant.NotificationService.DataContext;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -46,6 +47,7 @@ namespace Adamant.NotificationService.SignalsRegistration
 
 			// Data context
 			var context = new DevicesContext(connectionString, provider);
+			context.Database.Migrate();
 
 			// API
 			var api = new AdamantApi(configuration);

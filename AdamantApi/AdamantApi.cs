@@ -65,8 +65,7 @@ namespace Adamant.Api
 		{
 			var query = new Dictionary<string, string>
 			{
-				{ "orderBy", "timestamp:desc" },
-				{ "type", "0" }
+				{ "orderBy", "timestamp:desc" }
 			};
 
 			if (offset > 0)
@@ -76,8 +75,8 @@ namespace Adamant.Api
 				query.Add("fromHeight", height.ToString());
 
 			if (type.HasValue)
-				query.Add("type", type.Value.ToString("0"));
-
+				query.Add("type", ((int)type.Value).ToString());
+			
 			var endpoint = BuildEndpoint(CurrentServer, getTransactions, query);
 
 			var results = await GetResponse<TransactionsResponse>(endpoint);
@@ -98,7 +97,7 @@ namespace Adamant.Api
 				query.Add("fromHeight", height.ToString());
 
 			if (chatType.HasValue)
-				query.Add("type", chatType.Value.ToString());
+				query.Add("type", ((int)chatType.Value).ToString());
 
 			var endpoint = BuildEndpoint(CurrentServer, getChatTransactions, query);
 

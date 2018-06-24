@@ -1,5 +1,6 @@
 ﻿using Adamant.NotificationService.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
 
 namespace Adamant.NotificationService.DataContext
 {
@@ -10,16 +11,18 @@ namespace Adamant.NotificationService.DataContext
 		#region Ctor
 
 		public DevicesContext(DbContextOptions<DevicesContext> options) : base(options)
-		{}
+		{
+		}
 		
 		public DevicesContext(string connectionString, string provider): base(OptionsWithConnectionString(connectionString, provider))
-		{}
-		
+		{
+		}
+
 		#endregion
 
 		#region Internal
 
-		private static DbContextOptions<DevicesContext> OptionsWithConnectionString(string connectionString, string provider)
+		protected static DbContextOptions<DevicesContext> OptionsWithConnectionString(string connectionString, string provider)
 		{
 			var optionsBuilder = new DbContextOptionsBuilder<DevicesContext>();
 

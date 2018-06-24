@@ -10,7 +10,10 @@ namespace Adamant.NotificationService.PollingWorker
 {
 	public class ChatPollingWorker: TransactionsPollingWorkerBase
 	{
-		protected ChatPollingWorker(ILogger<ChatPollingWorker> logger, AdamantApi api, IPusher pusher, DevicesContext context) : base(logger, api, pusher, context)
+		public ChatPollingWorker(ILogger<ChatPollingWorker> logger,
+		                         AdamantApi api,
+		                         IPusher pusher,
+		                         DevicesContext context) : base(logger, api, pusher, context)
 		{
 		}
 		

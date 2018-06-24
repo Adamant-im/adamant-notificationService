@@ -14,6 +14,7 @@ namespace Adamant.NotificationService.DataContext
 			optionsBuilder.UseSqlite(connectionString);
 
 			var context = new DevicesContext(optionsBuilder.Options);
+			context.Database.Migrate();
 			Console.WriteLine("Total registered devices: {0}", context.Devices.Count());
 		}
 	}

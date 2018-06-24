@@ -10,7 +10,10 @@ namespace Adamant.NotificationService.PollingWorker
 {
 	public class TransferPollingWorker: TransactionsPollingWorkerBase
 	{
-		public TransferPollingWorker(ILogger<TransferPollingWorker> logger, AdamantApi api, IPusher pusher, DevicesContext context) : base(logger, api, pusher, context)
+		public TransferPollingWorker(ILogger<TransferPollingWorker> logger,
+		                             AdamantApi api,
+		                             IPusher pusher,
+		                             DevicesContext context) : base(logger, api, pusher, context)
 		{
 		}
 

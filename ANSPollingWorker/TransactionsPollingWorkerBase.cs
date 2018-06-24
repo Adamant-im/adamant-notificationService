@@ -19,7 +19,10 @@ namespace Adamant.NotificationService.PollingWorker
 
 		#endregion
 
-		protected TransactionsPollingWorkerBase(ILogger<PollingWorkerBase<Transaction>> logger, AdamantApi api, IPusher pusher, DevicesContext context) : base(logger)
+		public TransactionsPollingWorkerBase(ILogger<PollingWorkerBase<Transaction>> logger,
+		                                        AdamantApi api,
+		                                        IPusher pusher,
+		                                        DevicesContext context) : base(logger)
 		{
 			_adamantApi = api;
 			_context = context;
