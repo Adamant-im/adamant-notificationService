@@ -85,9 +85,15 @@ namespace Adamant.NotificationService.ApplePusher
 
 			var payload = new Payload
 			{
-				Body = content.Body,
-				Sound = content.Sound
+				Sound = content.Sound,
+				Badge = 1
 			};
+
+			if (!string.IsNullOrEmpty(content.Body))
+				payload.Body = content.Body;
+
+			if (!string.IsNullOrEmpty(content.Title))
+				payload.Title = content.Title;
 
 			var notification = new ApnsNotification
 			{
