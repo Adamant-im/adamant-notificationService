@@ -1,4 +1,4 @@
-﻿using System.IO;
+﻿using System;
 using Microsoft.Extensions.Configuration;
 
 namespace Adamant
@@ -12,7 +12,7 @@ namespace Adamant
 		public static IConfigurationRoot GetConfiguration()
 		{
 			var builder = new ConfigurationBuilder()
-				.SetBasePath("~/.ans/")
+				.SetBasePath(Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "/.ans/")
 				.AddJsonFile("config.json", false, true);
 
 			return builder.Build();
