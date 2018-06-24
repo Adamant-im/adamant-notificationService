@@ -94,7 +94,8 @@ namespace Adamant.NotificationService
 				if (transactions != null && transactions.Count > 0)
 				{
 					Logger.LogInformation("Got {0} new transactions, processing", transactions.Count);
-					LastHeight = ProcessNewTransactions(transactions);
+					ProcessNewTransactions(transactions);
+					LastHeight = GetLastHeight(transactions);
 					Logger.LogInformation("New lastHeight: {0}", LastHeight);
 				}
 				else
@@ -134,7 +135,7 @@ namespace Adamant.NotificationService
 		/// </summary>
 		/// <param name="transactions">New transactions.</param>
 		/// <returns>Last height</returns>
-		protected abstract int ProcessNewTransactions(IEnumerable<T> transactions);
+		protected abstract void ProcessNewTransactions(IEnumerable<T> transactions);
 
 		/// <summary>
 		/// Gets the new transactions from API.
@@ -143,6 +144,12 @@ namespace Adamant.NotificationService
 		/// <param name="height">Height.</param>
 		/// <param name="offset">Offset.</param>
 		protected abstract Task<IEnumerable<T>> GetNewTransactions(int height, int offset = 0);
+
+		/// <summary>
+		/// Calculate last height
+		/// </summary>
+		/// <returns>Last height</returns>
+		protected abstract int GetLastHeight(IEnumerable<T> transactions);
 
 		#endregion
 	}

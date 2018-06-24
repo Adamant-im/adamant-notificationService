@@ -29,13 +29,13 @@ namespace Adamant.NotificationService.PollingWorker
 			_pusher = pusher;
 		}
 
-		protected override int ProcessNewTransactions(IEnumerable<Transaction> transactions)
+		protected override void ProcessNewTransactions(IEnumerable<Transaction> transactions)
 		{
 			var count = transactions.Count();
 			if (count == 0)
 			{
 				Logger.LogWarning("Requested to process 0 transactions");
-				return LastHeight;
+				return;
 			}
 
 			Logger.LogInformation("Processing {0} transactions.", count);
@@ -62,10 +62,6 @@ namespace Adamant.NotificationService.PollingWorker
 			{
 				_pusher.NotifyDevice(d.device, d.transactions);
 			}
-
-			// Last height. API returns transactions with height >= lastHeight. So +1.
-			var newest = transactions.OrderByDescending(t => t.Height).First();
-			return newest.Height + 1;
 		}
 	}
 }

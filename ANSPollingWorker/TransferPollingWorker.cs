@@ -32,5 +32,11 @@ namespace Adamant.NotificationService.PollingWorker
 		{
 			return await _adamantApi.GetTransactions(height, offset, TransactionType.Send);
 		}
+
+		protected override int GetLastHeight(IEnumerable<Transaction> transactions)
+		{
+			// Last height. API returns transactions with height >= lastHeight. So +1.
+			return transactions.OrderByDescending(t => t.Height).First().Height + 1;
+		}
 	}
 }

@@ -51,12 +51,17 @@ namespace Adamant.NotificationService.SignalsRegistration
 			return await _adamantApi.GetChatTransactions(height, offset, ChatType.signal);
 		}
 
-		protected override int ProcessNewTransactions(IEnumerable<Transaction> transactions)
+		protected override int GetLastHeight(IEnumerable<Transaction> transactions)
+		{
+			return transactions.OrderByDescending(t => t.Height).First().Height;
+		}
+
+		protected override void ProcessNewTransactions(IEnumerable<Transaction> transactions)
 		{
 			var count = transactions.Count();
 			if (count == 0) {
 				Logger.LogWarning("Requested to process 0 transactions");
-				return LastHeight;
+				return;
 			}
 
 			Logger.LogInformation("Processing {0} transactions.", count);
@@ -105,10 +110,6 @@ namespace Adamant.NotificationService.SignalsRegistration
 			} catch (Exception e) {
 				Logger.LogCritical(e, "Failed to save context");
 			}
-
-			// Last height
-			var newest = transactions.OrderByDescending(t => t.Height).First();
-			return newest.Height;
 		}
 	}
 }
