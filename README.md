@@ -12,8 +12,6 @@ Right now only iOS pushes implemented, PWA will be the next one.
 ## Application
 There are two main parts:
 
-**ANSRegistrationService** — device sends its unique token to this Service, and the Service saves it into the database.
-
 **ANSPollingWorker** — console application that polls ADAMANT nodes for new transactions and checks for registered devices of receivers. If there is a registered device for the recipient of the transaction — sends a notification.
 
 **ANSSignalsRegistration** - console application that polls ADAMANT nodes for new service signals (transaction with chat asset, ChatType = 3) for device tokens. Message payload must be serialized in JSON and encrypted as other chat transactions.
@@ -25,7 +23,7 @@ Payload format:
     "provider": "apns"
 }
 ```
-*'apns' for Apple Push Notification service*
+*'apns' stands for Apple Push Notification service*
 
 ## QA
 #### Device token? What about security?
