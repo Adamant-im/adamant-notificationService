@@ -7,9 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="TweetNaClCore" Version="1.0.0" />
+    <PackageReference Include="Sodium.Core" Version="1.2.0" />
   </ItemGroup>
 </Project>

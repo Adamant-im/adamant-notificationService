@@ -2,18 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <RootNamespace>Adamant.Api</RootNamespace>
+    <RootNamespace>Adamant</RootNamespace>
     <ReleaseVersion>0.2</ReleaseVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Responses\" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\AdamantCore\AdamantCore.csproj" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="2.1.0" />
   </ItemGroup>
 </Project>

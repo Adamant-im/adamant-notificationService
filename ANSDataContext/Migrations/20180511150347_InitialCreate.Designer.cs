@@ -10,9 +10,10 @@ using System;
 namespace Adamant.NotificationService.DataContext.Migrations
 {
     [DbContext(typeof(DevicesContext))]
-    partial class DevicesContextModelSnapshot : ModelSnapshot
+    [Migration("20180511150347_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -24,8 +25,6 @@ namespace Adamant.NotificationService.DataContext.Migrations
                         .ValueGeneratedOnAdd();
 
                     b.Property<string>("Address");
-
-                    b.Property<string>("Provider");
 
                     b.Property<DateTime>("RegistrationDate");
 

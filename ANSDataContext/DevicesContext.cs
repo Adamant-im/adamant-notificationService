@@ -1,7 +1,6 @@
-﻿using System.IO;
-using Adamant.NotificationService.Models;
+﻿using Adamant.NotificationService.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+using Microsoft.EntityFrameworkCore.Design;
 
 namespace Adamant.NotificationService.DataContext
 {
@@ -12,33 +11,33 @@ namespace Adamant.NotificationService.DataContext
 		#region Ctor
 
 		public DevicesContext(DbContextOptions<DevicesContext> options) : base(options)
-		{}
+		{
+		}
 		
-		public DevicesContext(string connectionString): base(OptionsWithConnectionString(connectionString))
-		{}
-		
-		public DevicesContext() : base(OptionsFromConfigurationFile("appsettings.json"))
-		{}
-		
+		public DevicesContext(string connectionString, string provider): base(OptionsWithConnectionString(connectionString, provider))
+		{
+		}
+
 		#endregion
 
 		#region Internal
 
-		private static DbContextOptions<DevicesContext> OptionsFromConfigurationFile(string json)
-		{
-			var builder = new ConfigurationBuilder()
-				.SetBasePath(Directory.GetCurrentDirectory())
-				.AddJsonFile(json, optional: false, reloadOnChange: true);
-			var configuration = builder.Build();
-
-			var connectionString = configuration.GetConnectionString("Devices");
-			return OptionsWithConnectionString(connectionString);
-		}
-
-		private static DbContextOptions<DevicesContext> OptionsWithConnectionString(string connectionString)
+		protected static DbContextOptions<DevicesContext> OptionsWithConnectionString(string connectionString, string provider)
 		{
 			var optionsBuilder = new DbContextOptionsBuilder<DevicesContext>();
-			optionsBuilder.UseSqlite(connectionString);
+
+			switch (provider?.ToLower())
+			{
+				case null:
+				case "mysql":
+					optionsBuilder.UseMySQL(connectionString);
+					break;
+
+				case "sqlite":
+					optionsBuilder.UseSqlite(connectionString);
+					break;
+			}
+
 			return optionsBuilder.Options;
 		}
 

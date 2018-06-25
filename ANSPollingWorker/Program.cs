@@ -1,67 +1,114 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
-using System.Net.Http;
+using System.Threading.Tasks;
 using Adamant.Api;
 using Adamant.NotificationService.ApplePusher;
 using Adamant.NotificationService.DataContext;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using NLog.Extensions.Logging;
 
 namespace Adamant.NotificationService.PollingWorker
 {
 	class Program
-    {
-        private static readonly HttpClient client = new HttpClient();
+	{
+		#region Properties
 
-        static void Main(string[] args)
-        {
+		private static NLog.ILogger _logger;
+
+		#endregion
+
+		static void Main()
+		{
+			AppDomain.CurrentDomain.UnhandledException += Global_UnhandledException;
+
 			#region Config
 
-			var builder = new ConfigurationBuilder()
-				.SetBasePath(Directory.GetCurrentDirectory())
-				.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-			var configuration = builder.Build();
-			
-			var connectionString = configuration.GetConnectionString("Devices");
-			
-			if (!int.TryParse(configuration["PollingOptions:Delay"], out int delay))
+			var configuration = ConfigurationLoader.GetConfiguration();
+
+			var provider = configuration["Database:Provider"];
+			var connectionName = configuration["Database:ConnectionString"] ?? "devices";
+			var connectionString = configuration.GetConnectionString(connectionName);
+
+			if (!int.TryParse(configuration["PollingWorker:Delay"], out int delay))
 				delay = 2000;
-			
-			if (!Boolean.TryParse(configuration["PollingOptions:Warmup"], out bool warmup))
+
+			if (!Boolean.TryParse(configuration["PollingWorker:Warmup"], out bool warmup))
 				warmup = true;
 
 			#endregion
 
-			#region DataContext
+			#region Services
 
-			var context = new DevicesContext(connectionString);
-			Console.WriteLine("Total registered devices: {0}", context.Devices.Count());
+			// Data context
+			var context = new DevicesContext(connectionString, provider);
+			context.Database.Migrate();
 
-			#endregion
-
-			#region Initializing worker
-
-			var applePusher = new Pusher { Configuration = configuration };
+			// API
 			var api = new AdamantApi(configuration);
-			var worker = new AdamantPollingWorker
-			{
-				Delay = TimeSpan.FromMilliseconds(delay),
-				Pusher = applePusher,
-				AdamantApi = api,
-				Context = context
-			};
 
 			#endregion
 
-			Console.WriteLine("Starting polling. Delay: {0}ms.\nAny key to stop...", delay);
+			#region DI & NLog
 
+			var nLogConfig = configuration["PollingWorker:NlogConfig"];
+			if (String.IsNullOrEmpty(nLogConfig))
+				nLogConfig = "nlog.config";
+			else
+				nLogConfig = Utilities.HandleUnixHomeDirectory(nLogConfig);
+
+			_logger = NLog.LogManager.LoadConfiguration(nLogConfig).GetCurrentClassLogger();
+
+			var services = new ServiceCollection();
+
+			// Application services
+
+			services.AddSingleton<IConfiguration>(configuration);
+			services.AddSingleton<AdamantApi>();
+			services.AddSingleton(typeof(IPusher), typeof(Pusher));
+			services.AddSingleton(context);
+
+			// Polling workers
+			services.AddSingleton<ChatPollingWorker>();
+			services.AddSingleton<TransferPollingWorker>();
+
+			// Other
+			services.AddSingleton<ILoggerFactory, LoggerFactory>();
+			services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
+			services.AddLogging(b => b.SetMinimumLevel(LogLevel.Trace));
+
+			var serviceProvider = services.BuildServiceProvider();
+
+			var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+
+			loggerFactory.AddNLog(new NLogProviderOptions { CaptureMessageTemplates = true, CaptureMessageProperties = true });
+
+			#endregion
+
+			var totalDevices = context.Devices.Count();
+			_logger.Info("Database initialized. Total devices in db: {0}", totalDevices);
+			_logger.Info("Starting polling. Delay: {0}ms.", delay);
+
+			var applePusher = serviceProvider.GetRequiredService<IPusher>();
 			applePusher.Start();
 
-			worker.StartPolling(warmup);
+			var chatWorker = serviceProvider.GetRequiredService<ChatPollingWorker>();
+			chatWorker.Delay = TimeSpan.FromMilliseconds(delay);
+			chatWorker.StartPolling(warmup);
 
-			Console.ReadKey();
-			applePusher.Stop();
-			worker.StopPolling();
-        }
-    }
+			var transferWorker = serviceProvider.GetRequiredService<TransferPollingWorker>();
+			transferWorker.Delay = TimeSpan.FromMilliseconds(delay);
+			transferWorker.StartPolling(warmup);
+
+			Task.WaitAll(chatWorker.PollingTask, transferWorker.PollingTask);
+		}
+
+		// Log all unhandled exceptions
+		static void Global_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+		{
+			_logger.Fatal(e.ExceptionObject);
+		}
+	}
 }

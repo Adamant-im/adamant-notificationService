@@ -1,47 +1,50 @@
 ﻿{
   "ConnectionStrings":  {
-    "Devices": "Data Source=../dev/devices.db"
+    "mysql": "Server=localhost"
   },
-  "PollingOptions": {
-    "Warmup": true,
-    "Delay": 2000
+  "Database": {
+    "Provider": "mysql",
+    "ConnectionString": "mysql"
   },
   "Api": {
     "Server": [
       {
         "ip": "clown.adamant.im",
-        "protocol": "https",
-        "port": ""
+        "protocol": "https"
       },
       {
         "ip": "lake.adamant.im",
-        "protocol": "https",
-        "port": ""
+        "protocol": "https"
       },
       {
         "ip": "endless.adamant.im",
-        "protocol": "https",
-        "port": ""
+        "protocol": "https"
       }
     ]
   },
+  "PollingWorker": {
+    "Warmup": true,
+    "Delay": 3000
+  },
+  "SignalsRegistration": {
+    "Warmup": true,
+    "Delay": 10000,
+    "Account": "",
+    "PrivateKey": ""
+  },
   "ApplePusher": {
     "Certificate": {
-      "filename": "../dev/cert.p12",
+      "path": "~/.ans/cert.p12",
       "pass": ""
     },
     "Payload": [
       {
-        "key": "message",
         "transactionType": 8,
-        "title": "NotificationsService.NewMessage.Title",
         "body": "NotificationsService.NewMessage.BodySingle",
         "sound": "notification.mp3"
       },
       {
-        "key": "transfer",
         "transactionType": 0,
-        "title": "NotificationsService.NewTransfer.Title",
         "body": "NotificationsService.NewTransfer.BodySingle",
         "sound": "notification.mp3"
       }

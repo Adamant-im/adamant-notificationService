@@ -4,15 +4,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Storage.Internal;
+using MySql.Data.EntityFrameworkCore.Storage.Internal;
 using System;
 
 namespace Adamant.NotificationService.DataContext.Migrations
 {
     [DbContext(typeof(DevicesContext))]
-    [Migration("20180511092231_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20180611083124_Provider")]
+    partial class Provider
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -26,6 +25,8 @@ namespace Adamant.NotificationService.DataContext.Migrations
                         .ValueGeneratedOnAdd();
 
                     b.Property<string>("Address");
+
+                    b.Property<string>("Provider");
 
                     b.Property<DateTime>("RegistrationDate");
 

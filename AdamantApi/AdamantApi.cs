@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -42,7 +41,11 @@ namespace Adamant.Api
 
 				foreach (var raw in endpointsRaw)
 				{
-					endpoints.Add(new ServerDescription(raw["ip"], raw["protocol"], raw["port"]));
+					int? port = null;
+					if (int.TryParse(raw["port"], out var p))
+						port = p;
+
+				   endpoints.Add(new ServerDescription(raw["ip"], raw["protocol"], port));
 				}
 
 				ServersList = endpoints;
@@ -58,38 +61,46 @@ namespace Adamant.Api
 
 		#region Public Methods
 
-		public async Task<IEnumerable<Transaction>> GetTransactions(int offset, int height)
+		public async Task<IEnumerable<Transaction>> GetTransactions(int height, int offset, TransactionType? type)
 		{
 			var query = new Dictionary<string, string>
 			{
-				{ "orderBy", "timestamp:desc" },
-				{ "type", "0" }
+				{ "orderBy", "timestamp:desc" }
 			};
+			
+			if (type.HasValue)
+				query.Add("type", ((int)type.Value).ToString());
+			
+			if (height > 0)
+				query.Add("and:fromHeight", height.ToString());
 
 			if (offset > 0)
 				query.Add("offset", offset.ToString());
-
-			if (height > 0)
-				query.Add("fromHeight", height.ToString());
-
+			
 			var endpoint = BuildEndpoint(CurrentServer, getTransactions, query);
 
 			var results = await GetResponse<TransactionsResponse>(endpoint);
 			return results.Transactions;
 		}
 
-		public async Task<IEnumerable<Transaction>> GetChatTransactions(int offset, int height)
+		public async Task<IEnumerable<Transaction>> GetChatTransactions(int height, int offset, ChatType? chatType = null, string address = null)
 		{
 			var query = new Dictionary<string, string>
 			{
 				{ "orderBy", "timestamp:desc" }
 			};
 
-			if (offset > 0)
-				query.Add("offset", offset.ToString());
+			if (!string.IsNullOrEmpty(address))
+				query.Add("isIn", address);
 
+			if (chatType.HasValue)
+				query.Add("type", ((int)chatType.Value).ToString());
+			
 			if (height > 0)
 				query.Add("fromHeight", height.ToString());
+
+			if (offset > 0)
+				query.Add("offset", offset.ToString());
 
 			var endpoint = BuildEndpoint(CurrentServer, getChatTransactions, query);
 
