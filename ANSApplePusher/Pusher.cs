@@ -152,7 +152,7 @@ namespace Adamant.NotificationService.ApplePusher
 			if (string.IsNullOrEmpty(certName))
 				throw new Exception("Can't get certerficate filename from configuration");
 			
-			var config = new ApnsConfiguration(ApnsConfiguration.ApnsServerEnvironment.Sandbox, certName, certPass);
+			var config = new ApnsConfiguration(ApnsConfiguration.ApnsServerEnvironment.Production, certName, certPass);
 
 			return new ApnsServiceBroker(config);
 		}
