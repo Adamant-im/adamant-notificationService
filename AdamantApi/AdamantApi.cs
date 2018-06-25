@@ -83,13 +83,16 @@ namespace Adamant.Api
 			return results.Transactions;
 		}
 
-		public async Task<IEnumerable<Transaction>> GetChatTransactions(int height, int offset, ChatType? chatType = null)
+		public async Task<IEnumerable<Transaction>> GetChatTransactions(int height, int offset, ChatType? chatType = null, string address = null)
 		{
 			var query = new Dictionary<string, string>
 			{
 				{ "orderBy", "timestamp:desc" }
 			};
-			
+
+			if (!string.IsNullOrEmpty(address))
+				query.Add("isIn", address);
+
 			if (chatType.HasValue)
 				query.Add("type", ((int)chatType.Value).ToString());
 			

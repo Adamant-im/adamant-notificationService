@@ -52,7 +52,13 @@ namespace Adamant.NotificationService.SignalsRegistration
 
 			#region DI & NLog
 
-			var nLogConfig = Utilities.HandleUnixHomeDirectory(configuration["SignalsRegistration:NlogConfig"]);
+			var nLogConfig = configuration["SignalsRegistration:NlogConfig"];
+			if (String.IsNullOrEmpty(nLogConfig))
+				nLogConfig = "nlog.config";
+			
+			else
+				nLogConfig = Utilities.HandleUnixHomeDirectory(nLogConfig);
+
 			_logger = NLog.LogManager.LoadConfiguration(nLogConfig).GetCurrentClassLogger();
 
 			var services = new ServiceCollection();
@@ -82,14 +88,19 @@ namespace Adamant.NotificationService.SignalsRegistration
 			_logger.Info("Database initialized. Total devices in db: {0}", totalDevices);
 			_logger.Info("Starting polling. Delay: {0}ms.", delay);
 
+			var address = configuration["SignalsRegistration:Address"];
+			if (string.IsNullOrEmpty(address))
+				throw new Exception("ANS account address is required");
+
 			var privateKey = configuration["SignalsRegistration:PrivateKey"];
 			if (string.IsNullOrEmpty(privateKey))
-				throw new Exception("Secret key is required");
+				throw new Exception("ANS account private key is required");
 
 			var worker = serviceProvider.GetRequiredService<SignalsPoller>();
 			worker.Delay = TimeSpan.FromMilliseconds(delay);
-			worker.StartPolling(warmup);
+			worker.Address = address;
 			worker.PrivateKey = privateKey;
+			worker.StartPolling(warmup);
 
 			if (worker.PollingTask != null)
 			{

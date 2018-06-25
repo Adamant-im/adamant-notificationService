@@ -53,7 +53,12 @@ namespace Adamant.NotificationService.PollingWorker
 
 			#region DI & NLog
 
-			var nLogConfig = Utilities.HandleUnixHomeDirectory(configuration["PollingWorker:NlogConfig"]);
+			var nLogConfig = configuration["PollingWorker:NlogConfig"];
+			if (String.IsNullOrEmpty(nLogConfig))
+				nLogConfig = "nlog.config";
+			else
+				nLogConfig = Utilities.HandleUnixHomeDirectory(nLogConfig);
+
 			_logger = NLog.LogManager.LoadConfiguration(nLogConfig).GetCurrentClassLogger();
 
 			var services = new ServiceCollection();

@@ -23,6 +23,7 @@ namespace Adamant.NotificationService.SignalsRegistration
 
 		#region Properties
 
+		public string Address { get; set; }
 		public string PrivateKey { get; set; }
 
 		#endregion
@@ -48,7 +49,7 @@ namespace Adamant.NotificationService.SignalsRegistration
 
 		protected override async Task<IEnumerable<Transaction>> GetNewTransactions(int height, int offset = 0)
 		{
-			return await _adamantApi.GetChatTransactions(height, offset, ChatType.signal);
+			return await _adamantApi.GetChatTransactions(height, offset, ChatType.signal, Address);
 		}
 
 		protected override int GetLastHeight(IEnumerable<Transaction> transactions)
