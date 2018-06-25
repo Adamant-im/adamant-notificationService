@@ -1,10 +1,10 @@
 ﻿{
   "ConnectionStrings":  {
-    "sqlite": "Data Source=../dev/devices.db"
+    "mysql": "Server=localhost"
   },
   "Database": {
-    "Provider": "sqlite",
-    "ConnectionString": "sqlite"
+    "Provider": "mysql",
+    "ConnectionString": "mysql"
   },
   "Api": {
     "Server": [
@@ -24,11 +24,12 @@
   },
   "PollingWorker": {
     "Warmup": true,
-    "Delay": 2000
+    "Delay": 3000
   },
   "SignalsRegistration": {
     "Warmup": true,
-    "Delay": 2000,
+    "Delay": 10000,
+    "Account": "",
     "PrivateKey": ""
   },
   "ApplePusher": {
@@ -39,13 +40,11 @@
     "Payload": [
       {
         "transactionType": 8,
-        "title": "NotificationsService.NewMessage.Title",
         "body": "NotificationsService.NewMessage.BodySingle",
         "sound": "notification.mp3"
       },
       {
         "transactionType": 0,
-        "title": "NotificationsService.NewTransfer.Title",
         "body": "NotificationsService.NewTransfer.BodySingle",
         "sound": "notification.mp3"
       }
