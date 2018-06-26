@@ -42,8 +42,7 @@ namespace Adamant.NotificationService.SignalsRegistration
 
 		protected override async Task<int> GetCurrentLastHeight()
 		{
-			var transactions = await _adamantApi.GetChatTransactions(0, 0, ChatType.signal);
-
+			var transactions = await _adamantApi.GetTransactions(0, 0, null, 1);
 			return transactions?.FirstOrDefault()?.Height ?? 0;
 		}
 
