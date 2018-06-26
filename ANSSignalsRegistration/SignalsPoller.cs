@@ -42,14 +42,14 @@ namespace Adamant.NotificationService.SignalsRegistration
 
 		protected override async Task<int> GetCurrentLastHeight()
 		{
-			var transactions = await _adamantApi.GetChatTransactions(0, 0, ChatType.signal);
-
+			var transactions = await _adamantApi.GetTransactions(0, 0, null, 1);
 			return transactions?.FirstOrDefault()?.Height ?? 0;
 		}
 
 		protected override async Task<IEnumerable<Transaction>> GetNewTransactions(int height, int offset = 0)
 		{
-			return await _adamantApi.GetChatTransactions(height, offset, ChatType.signal, Address);
+			var transactions = await _adamantApi.GetChatTransactions(height, offset, ChatType.signal, Address);
+			return transactions.Where(t => t.RecipientId.Equals(Address));
 		}
 
 		protected override int GetLastHeight(IEnumerable<Transaction> transactions)

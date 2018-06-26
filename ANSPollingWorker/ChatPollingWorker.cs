@@ -16,13 +16,6 @@ namespace Adamant.NotificationService.PollingWorker
 		                         DevicesContext context) : base(logger, api, pusher, context)
 		{
 		}
-		
-		protected override async Task<int> GetCurrentLastHeight()
-		{
-			var transactions = await _adamantApi.GetChatTransactions(0, 0);
-
-			return transactions?.FirstOrDefault().Height ?? 0;
-		}
 
 		protected override async Task<IEnumerable<Transaction>> GetNewTransactions(int height, int offset = 0)
 		{

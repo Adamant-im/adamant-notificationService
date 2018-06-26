@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Adamant.Api;
 using Adamant.Models;
 using Adamant.NotificationService.DataContext;
@@ -27,6 +27,12 @@ namespace Adamant.NotificationService.PollingWorker
 			_adamantApi = api;
 			_context = context;
 			_pusher = pusher;
+		}
+
+		protected override async Task<int> GetCurrentLastHeight()
+		{
+			var transactions = await _adamantApi.GetTransactions(0, 0, null, 1);
+			return transactions?.FirstOrDefault()?.Height ?? 0;
 		}
 
 		protected override void ProcessNewTransactions(IEnumerable<Transaction> transactions)

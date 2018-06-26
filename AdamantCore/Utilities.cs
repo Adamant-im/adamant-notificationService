@@ -1,15 +1,18 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 
 namespace Adamant
 {
 	public static class Utilities
 	{
+		static String AddressRegex = "^U([0-9]{6,20})$";
+
 		public static bool IsValidAdamantAddress(string address)
 		{
 			if (string.IsNullOrEmpty(address))
 				return false;
 
-			return true;
+			return Regex.IsMatch(address, AddressRegex);
 		}
 
 		/// <summary>
