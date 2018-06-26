@@ -6,7 +6,7 @@ namespace Adamant.NotificationService.DataContext
 {
 	public class ANSContext: DbContext, IDesignTimeDbContextFactory<ANSContext>
 	{
-		private readonly string connectionString = "";
+		private readonly string designConnectionString = "";
 
 		public DbSet<Device> Devices { get; set; }
 		public DbSet<ServiceState> ServiceStates { get; set; }
@@ -27,13 +27,16 @@ namespace Adamant.NotificationService.DataContext
 		public ANSContext CreateDbContext(string[] args)
 		{
 			var optionsBuilder = new DbContextOptionsBuilder<ANSContext>();
-			optionsBuilder.UseMySQL(connectionString);
+			optionsBuilder.UseMySQL(designConnectionString);
 			return new ANSContext(optionsBuilder.Options);
 		}
 
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 		{
-			optionsBuilder.UseMySQL(connectionString);
+			if (!optionsBuilder.IsConfigured)
+			{
+				optionsBuilder.UseMySQL(designConnectionString);
+			}
 		}
 
 		#endregion
