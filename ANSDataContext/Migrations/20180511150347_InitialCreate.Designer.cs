@@ -9,7 +9,7 @@ using System;
 
 namespace Adamant.NotificationService.DataContext.Migrations
 {
-    [DbContext(typeof(DevicesContext))]
+    [DbContext(typeof(ANSContext))]
     [Migration("20180511150347_InitialCreate")]
     partial class InitialCreate
     {

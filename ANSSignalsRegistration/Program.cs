@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Adamant.Api;
 using Adamant.NotificationService.DataContext;
+using Adamant.NotificationService.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,15 +35,15 @@ namespace Adamant.NotificationService.SignalsRegistration
 			if (!int.TryParse(configuration["SignalsRegistration:Delay"], out int delay))
 				delay = 2000;
 
-			if (!Boolean.TryParse(configuration["SignalsRegistration:Warmup"], out bool warmup))
-				warmup = true;
+			if (!Enum.TryParse(configuration["SignalsRegistration:Startup"], out StartupMode startupMode))
+				startupMode = StartupMode.database;
 			
 			#endregion
 
 			#region Services
 
 			// Data context
-			var context = new DevicesContext(connectionString, provider);
+			var context = new ANSContext(connectionString, provider);
 			context.Database.Migrate();
 
 			// API
@@ -100,7 +101,7 @@ namespace Adamant.NotificationService.SignalsRegistration
 			worker.Delay = TimeSpan.FromMilliseconds(delay);
 			worker.Address = address;
 			worker.PrivateKey = privateKey;
-			worker.StartPolling(warmup);
+			worker.StartPolling(startupMode);
 
 			if (worker.PollingTask != null)
 			{

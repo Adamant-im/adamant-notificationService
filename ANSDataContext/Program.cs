@@ -8,12 +8,12 @@ namespace Adamant.NotificationService.DataContext
 	{
 		static void Main(string[] args)
 		{
-			var connectionString = "Data Source=database.db";
+			var connectionString = "";
 
-			var optionsBuilder = new DbContextOptionsBuilder<DevicesContext>();
-			optionsBuilder.UseSqlite(connectionString);
+			var optionsBuilder = new DbContextOptionsBuilder<ANSContext>();
+			optionsBuilder.UseMySQL(connectionString);
 
-			var context = new DevicesContext(optionsBuilder.Options);
+			var context = new ANSContext(optionsBuilder.Options);
 			context.Database.Migrate();
 			Console.WriteLine("Total registered devices: {0}", context.Devices.Count());
 		}
