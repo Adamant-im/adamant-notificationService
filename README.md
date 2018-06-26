@@ -82,16 +82,22 @@ Sample configuration file is located in Solution root directory. Booth Polling a
         * port (int, optional)
 
 - PollingWroker: Polling settings. Properties:
-    + Warmup (bool, optional, default: true): Start with a warmup. If this set to true, Worker will try to fetch latest block height from ADAMANT, and then begins the loop with this height. If param set to false or warmup failed, Worker will start processing from 0, do not try this on live network.
     + Delay (milliseconds as int, optional, default: 2000): delay between two requests.
     + NlogConfig (string, optional, default: 'nlog.config'): path to NLog configuration file.
+    + Startup (enum, optional, default: database): Startup mode. Options:
+        * database: Try to load saved last height from database, and begin from this value. If failed or no value saved, go to 'network' mode.
+        * network: Try to get last transaction from network and use it height as last height value. If failed or no transaction received, go to 'initial' mode.
+        * initial: Start from height 0.
 
 - SignalsRegistration: Signals polling & registration settings. Properties:
-    + Warmup (bool, optional, default: true): Start with a warmup. If this set to true, Worker will try to fetch latest block height from ADAMANT, and then begins the loop with this height. If param set to false or warmup failed, Worker will start processing from 0, do not try this on live network.
     + Delay (milliseconds as int, optional, default: 2000): delay between two requests.
     + NlogConfig (string, optional, default: 'nlog.config'): path to NLog configuration file.
     + Address (string, required): ANS account address to poll signals.
     + PrivateKey (string, required): ANS account private key to decode signals.
+    + Startup (enum, optional, default: database): Startup mode. Options:
+        * database: Try to load saved last height from database, and begin from this value. If failed or no value saved, go to 'network' mode.
+        * network: Try to get last transaction from network and use it height as last height value. If failed or no transaction received, go to 'initial' mode.
+        * initial: Start from height 0.
 
 - ApplePusher: APNS settings. Sections:
     + Certificate. Properties:
