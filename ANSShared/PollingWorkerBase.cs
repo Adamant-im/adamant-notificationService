@@ -3,19 +3,27 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Adamant.Api;
+using Adamant.Models;
+using Adamant.NotificationService.DataContext;
+using Adamant.NotificationService.Models;
 using Microsoft.Extensions.Logging;
 
 namespace Adamant.NotificationService
 {
-	public abstract class PollingWorkerBase<T>
+	public abstract class PollingWorkerBase<T> where T: Transaction
 	{
 		#region Dependencies
 
 		protected ILogger<PollingWorkerBase<T>> Logger { get; }
+		protected ANSContext Context { get; }
+		protected AdamantApi Api { get; }
 
 		#endregion
 
 		#region Properties
+
+		public abstract string ServiceName { get; }
 
 		private CancellationTokenSource _tokenSource;
 
@@ -24,22 +32,21 @@ namespace Adamant.NotificationService
 		public int LastHeight { get; private set; }
 
 		/// <summary>
-		/// Amount of transactions for every request. Default is 100.
-		/// 
-		/// Setter is not yet impletented by API.
+		/// Amount of transactions for every request. Not all API's provides support for this param.
 		/// </summary>
-		public int TransactionsLimit { get; /*set;*/ } = 100;
+		public int TransactionsLimit { get; } = 100;
 		public TimeSpan Delay { get; set; }
 
 		public bool IsWorking { get; private set; }
-
 
 		#endregion
 
 		#region Ctor
 
-		protected PollingWorkerBase(ILogger<PollingWorkerBase<T>> logger)
+		protected PollingWorkerBase(AdamantApi api, ANSContext context, ILogger<PollingWorkerBase<T>> logger)
 		{
+			Api = api;
+			Context = context;
 			Logger = logger;
 		}
 
@@ -47,7 +54,7 @@ namespace Adamant.NotificationService
 
 		#region Public API
 
-		public void StartPolling(bool warmup)
+		public void StartPolling(StartupMode startupMode)
 		{
 			if (IsWorking)
 				return;
@@ -57,7 +64,7 @@ namespace Adamant.NotificationService
 			Logger.LogInformation("Start polling");
 
 			_tokenSource = new CancellationTokenSource();
-			PollingTask = UpdateTransactionsLoop(warmup, _tokenSource.Token);
+			PollingTask = UpdateTransactionsLoop(startupMode, _tokenSource.Token);
 		}
 
 		public void StopPolling()
@@ -75,12 +82,29 @@ namespace Adamant.NotificationService
 
 		#region Logic
 
-		private async Task UpdateTransactionsLoop(bool warmup, CancellationToken token)
+		private async Task UpdateTransactionsLoop(StartupMode startupMode, CancellationToken token)
 		{
-			if (warmup)
+			switch (startupMode)
 			{
-				Logger.LogInformation("Warming up, getting current top height.");
-				LastHeight = await GetCurrentLastHeight();
+				case StartupMode.database:
+					Logger.LogInformation("Getting stored height from databse...");
+					LastHeight = GetStoredLastHeight();
+
+					if (LastHeight == 0)
+					{
+						Logger.LogInformation("No stored height, warming up from network.");
+						LastHeight = await GetNetworkCurrentLastHeight();
+					}
+
+					break;
+					
+				case StartupMode.network:
+					Logger.LogInformation("Warming up, getting current top height.");
+					LastHeight = await GetNetworkCurrentLastHeight();
+					break;
+
+				case StartupMode.initial:
+					break;
 			}
 
 			Logger.LogInformation("Begin polling from {0}", LastHeight);
@@ -97,6 +121,7 @@ namespace Adamant.NotificationService
 					ProcessNewTransactions(transactions);
 					LastHeight = GetLastHeight(transactions);
 					Logger.LogInformation("New lastHeight: {0}", LastHeight);
+					StoreLastHeight();
 				}
 				else
 					Logger.LogDebug("Got 0, delay.");
@@ -126,11 +151,6 @@ namespace Adamant.NotificationService
 		#region Abstract
 
 		/// <summary>
-		/// Get current latest height.
-		/// </summary>
-		protected abstract Task<int> GetCurrentLastHeight();
-
-		/// <summary>
 		/// Processes received new transactions. This method should return new last height.
 		/// </summary>
 		/// <param name="transactions">New transactions.</param>
@@ -146,10 +166,44 @@ namespace Adamant.NotificationService
 		protected abstract Task<IEnumerable<T>> GetNewTransactions(int height, int offset = 0);
 
 		/// <summary>
+		/// Get current Blockchain latest height.
+		/// </summary>
+		protected virtual async Task<int> GetNetworkCurrentLastHeight()
+		{
+			var transactions = await Api.GetTransactions(0, 0, null, 1);
+			return transactions?.FirstOrDefault()?.Height ?? 0;
+		}
+
+		/// <summary>
+		/// Gets stored last height from dabatase.
+		/// </summary>
+		protected virtual int GetStoredLastHeight()
+		{
+			return Context.ServiceStates.FirstOrDefault(ss => ss.Service.Equals(ServiceName))?.LastHeight ?? 0;
+		}
+
+		protected virtual void StoreLastHeight()
+		{
+			var serviceState = Context.ServiceStates.FirstOrDefault(ss => ss.Service.Equals(ServiceName));
+			if (serviceState == null)
+			{
+				serviceState = new ServiceState { Service = ServiceName };
+				Context.ServiceStates.Add(serviceState);
+			}
+
+			serviceState.LastHeight = LastHeight;
+			serviceState.Date = DateTime.UtcNow;
+			Context.SaveChanges();
+		}
+
+		/// <summary>
 		/// Calculate last height
 		/// </summary>
 		/// <returns>Last height</returns>
-		protected abstract int GetLastHeight(IEnumerable<T> transactions);
+		protected virtual int GetLastHeight(IEnumerable<T> transactions)
+		{
+			return transactions.OrderByDescending(t => t.Height).First().Height;
+		}
 
 		#endregion
 	}
