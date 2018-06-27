@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Adamant.Api;
-using Adamant.NotificationService.ApplePusher;
+//using Adamant.NotificationService.ApplePusher;
 using Adamant.NotificationService.DataContext;
 using Adamant.NotificationService.Models;
 using Microsoft.EntityFrameworkCore;
@@ -68,7 +68,7 @@ namespace Adamant.NotificationService.PollingWorker
 
 			services.AddSingleton<IConfiguration>(configuration);
 			services.AddSingleton<AdamantApi>();
-			services.AddSingleton(typeof(IPusher), typeof(Pusher));
+			//services.AddSingleton(typeof(IPusher), typeof(Pusher));
 			services.AddSingleton(context);
 
 			// Polling workers
@@ -92,18 +92,18 @@ namespace Adamant.NotificationService.PollingWorker
 			_logger.Info("Database initialized. Total devices in db: {0}", totalDevices);
 			_logger.Info("Starting polling. Delay: {0}ms.", delay);
 
-			var applePusher = serviceProvider.GetRequiredService<IPusher>();
-			applePusher.Start();
+			//var applePusher = serviceProvider.GetRequiredService<IPusher>();
+			//applePusher.Start();
 
-			var chatWorker = serviceProvider.GetRequiredService<ChatPollingWorker>();
-			chatWorker.Delay = TimeSpan.FromMilliseconds(delay);
-			chatWorker.StartPolling(startupMode);
+			//var chatWorker = serviceProvider.GetRequiredService<ChatPollingWorker>();
+			//chatWorker.Delay = TimeSpan.FromMilliseconds(delay);
+			//chatWorker.StartPolling(startupMode);
 
-			var transferWorker = serviceProvider.GetRequiredService<TransferPollingWorker>();
-			transferWorker.Delay = TimeSpan.FromMilliseconds(delay);
-			transferWorker.StartPolling(startupMode);
+			//var transferWorker = serviceProvider.GetRequiredService<TransferPollingWorker>();
+			//transferWorker.Delay = TimeSpan.FromMilliseconds(delay);
+			//transferWorker.StartPolling(startupMode);
 
-			Task.WaitAll(chatWorker.PollingTask, transferWorker.PollingTask);
+			//Task.WaitAll(chatWorker.PollingTask, transferWorker.PollingTask);
 		}
 
 		// Log all unhandled exceptions

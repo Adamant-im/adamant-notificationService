@@ -12,7 +12,7 @@ namespace Adamant.NotificationService
 		void Start();
 		void Stop();
 
-		event InvalidTokenHandler OnInvalidTokenDetected;
+		event InvalidTokenHandler OnInvalidToken;
 	}
 
 	public class InvalidTokenEventArgs: EventArgs

@@ -1,25 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Adamant.Models;
 using Adamant.NotificationService.Models;
+using SharpPusher;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using PushSharp.Apple;
+using System.Linq;
 
 namespace Adamant.NotificationService.ApplePusher
 {
-	public class Pusher : IPusher
+	public class Pusher: IPusher
 	{
 		#region Properties
 
 		private readonly ILogger<Pusher> _logger;
 		private readonly IConfiguration _configuration;
 
-		private ApnsServiceBroker _broker;
+		private ApnsPusher pusher;
 		private Dictionary<TransactionType, PayloadContent> _contents;
 
-		public event InvalidTokenHandler OnInvalidTokenDetected;
+		public event InvalidTokenHandler OnInvalidToken;
 
 		#endregion
 
@@ -29,38 +29,40 @@ namespace Adamant.NotificationService.ApplePusher
 		{
 			_logger = logger;
 			_configuration = configuration;
+
+			Func<string, IConfiguration, string> getRequiredParam = (key, config) =>
+			{
+				var value = config[key];
+				if (value == null)
+					throw new ArgumentException($"Can't get {key}");
+				
+				return value;
+			};
+
+			_contents = LoadPayloadContent(_configuration);
+
+			var keyId = getRequiredParam("ApplePusher:Keys:keyId", configuration);
+			var teamId = getRequiredParam("ApplePusher:Keys:teamId", configuration);
+			var bundleAppId = getRequiredParam("ApplePusher:Keys:bundleAppId", configuration);
+			var pfxPath = getRequiredParam("ApplePusher:Keys:pfxPath", configuration);
+			var pfxPassword = getRequiredParam("ApplePusher:Keys:pfxPassword", configuration);
+
+
+			pusher = new ApnsPusher(keyId, teamId, bundleAppId, pfxPath, pfxPassword, ApnsEnvironment.Production);
+			pusher.OnNotificationSuccess += Pusher_OnNotificationSuccess;
+			pusher.OnNotificationFailed += Pusher_OnNotificationFailed;
 		}
 
 		#endregion
 
-		#region IPusher
-
 		public void Start()
 		{
-			_contents = LoadPayloadContent(_configuration);
-			_broker = CreateBroker(_configuration);
-
-			if (_broker == null)
-				throw new Exception("Can't create APNs broker");
-
-			_broker.OnNotificationFailed += OnNotificationFailed;
-			_broker.OnNotificationSucceeded += OnNotificationSucceeded;
-
-			_broker.Start();
-
-			// TODO: Start feedback poller
 		}
 
 		public void Stop()
 		{
-			_broker.Stop();
-
-			_broker.OnNotificationFailed -= OnNotificationFailed;
-			_broker.OnNotificationSucceeded -= OnNotificationSucceeded;
-			_broker = null;
-			_contents = null;
 		}
-
+		
 		public void NotifyDevice(Device device, IEnumerable<Transaction> transactions)
 		{
 			if (device == null)
@@ -72,7 +74,6 @@ namespace Adamant.NotificationService.ApplePusher
 			if (transactions == null || !transactions.Any())
 				return;
 
-
 			// Get transaction type, check if we have payload content for this type
 
 			var type = transactions.First().Type;
@@ -82,88 +83,54 @@ namespace Adamant.NotificationService.ApplePusher
 
 			var content = _contents[type];
 
-
-			// Make payload and notification
-
-			var payload = new Payload
-			{
-				Sound = content.Sound,
-				Badge = 1
-			};
-
-			if (!string.IsNullOrEmpty(content.Body))
-				payload.Body = content.Body;
-
-			if (!string.IsNullOrEmpty(content.Title))
-				payload.Title = content.Title;
+			// Make payload
 
 			var notification = new ApnsNotification
 			{
-				DeviceToken = device.Token,
-				Payload = payload.ToJObject()
+				Payload = new ApnsPayload
+				{
+					Alert = new ApnsNotificationAlert(),
+					Badge = 1
+				}
 			};
 
+			if (!string.IsNullOrEmpty(content.Sound))
+				notification.Payload.Sound = content.Sound;
 
-			// Send it
+			if (!string.IsNullOrEmpty(content.Body))
+				notification.Payload.Alert.BodyLocalizationKey = content.Body;
 
-			_broker.QueueNotification(notification);
+			if (!string.IsNullOrEmpty(content.Title))
+				notification.Payload.Alert.TitleLocalizationKey = content.Title;
+
+			pusher.SendNotificationAsync(notification, device.Token);
 		}
 
-		#endregion
 
-		#region Logging
+		#region Events
 
-		private void OnNotificationSucceeded(ApnsNotification notification)
+		void Pusher_OnNotificationSuccess(object sender, NotificationSuccessEventArgs<ApnsNotification> args)
 		{
-			_logger.LogDebug("Apple Notification Sent. Device: {0}. Payload: {1}", notification.DeviceToken, notification.Payload);
+			_logger.LogDebug("Notification success, token: {0}", args.Token);
 		}
 
-		private void OnNotificationFailed(ApnsNotification notification, AggregateException aggregateEx)
+		void Pusher_OnNotificationFailed(object sender, NotificationFailedEventArgs<ApnsNotification, ApnsResult> args)
 		{
-			aggregateEx.Handle(ex =>
+			_logger.LogError(args.Exception, "Notification failed. Code: {0}, reason: {1}", args.ResultCode, args.Reason);
+
+			switch (args.ResultCode)
 			{
-				if (ex is ApnsNotificationException notificationException)
-				{
-					var apnsNotification = notificationException.Notification;
-					var statusCode = notificationException.ErrorStatusCode;
-					_logger.LogError(notificationException, "Apple Notification Failed: ID={0}, Code={1}, Token={2}, Payload={3}", apnsNotification.Identifier, statusCode, notification.DeviceToken, notification.Payload);
-
-					switch (statusCode)
-					{
-						case ApnsNotificationErrorStatusCode.InvalidTokenSize:
-						case ApnsNotificationErrorStatusCode.InvalidToken:
-							OnInvalidTokenDetected(this, new InvalidTokenEventArgs(notification.DeviceToken));
-							break;
-					}
-				}
-				else
-				{
-					_logger.LogError(ex.InnerException, "Apple Notification Failed for some unknown reason, Token={0}, Payload={1}", notification.DeviceToken, notification.Payload);
-				}
-
-				return true;
-			});
+				case ApnsResult.TokenExpired:
+					var a = new InvalidTokenEventArgs(args.Token);
+					OnInvalidToken?.Invoke(this, a);
+					break;
+			}
 		}
+
 
 		#endregion
 
 		#region Tools
-
-		private static ApnsServiceBroker CreateBroker(IConfiguration configuration)
-		{
-			if (configuration == null)
-				throw new NullReferenceException("configuration");
-			
-			var certName = Utilities.HandleUnixHomeDirectory(configuration["ApplePusher:Certificate:path"]);
-			var certPass = configuration["ApplePusher:Certificate:pass"] ?? "";
-
-			if (string.IsNullOrEmpty(certName))
-				throw new Exception("Can't get certerficate filename from configuration");
-			
-			var config = new ApnsConfiguration(ApnsConfiguration.ApnsServerEnvironment.Production, certName, certPass);
-
-			return new ApnsServiceBroker(config);
-		}
 
 		private static Dictionary<TransactionType, PayloadContent> LoadPayloadContent(IConfiguration configuration)
 		{

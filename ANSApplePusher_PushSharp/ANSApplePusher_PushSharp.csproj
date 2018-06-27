@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <RootNamespace>Adamant.NotificationService.ApplePusher</RootNamespace>
+    <ReleaseVersion>0.2</ReleaseVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ANSCore\ANSCore.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="PushSharp.Core" Version="1.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.1.0" />
+  </ItemGroup>
+</Project>
