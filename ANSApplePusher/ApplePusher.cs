@@ -9,11 +9,11 @@ using System.Linq;
 
 namespace Adamant.NotificationService.ApplePusher
 {
-	public class Pusher: IPusher
+	public class ApplePusher: IPusher
 	{
 		#region Properties
 
-		private readonly ILogger<Pusher> _logger;
+		private readonly ILogger<ApplePusher> _logger;
 		private readonly IConfiguration _configuration;
 
 		private ApnsPusher pusher;
@@ -23,9 +23,10 @@ namespace Adamant.NotificationService.ApplePusher
 
 		#endregion
 
+
 		#region Ctor
 
-		public Pusher(ILogger<Pusher> logger, IConfiguration configuration)
+		public ApplePusher(ILogger<ApplePusher> logger, IConfiguration configuration)
 		{
 			_logger = logger;
 			_configuration = configuration;
@@ -44,7 +45,7 @@ namespace Adamant.NotificationService.ApplePusher
 			var keyId = getRequiredParam("ApplePusher:Keys:keyId", configuration);
 			var teamId = getRequiredParam("ApplePusher:Keys:teamId", configuration);
 			var bundleAppId = getRequiredParam("ApplePusher:Keys:bundleAppId", configuration);
-			var pfxPath = getRequiredParam("ApplePusher:Keys:pfxPath", configuration);
+			var pfxPath = Utilities.HandleUnixHomeDirectory(getRequiredParam("ApplePusher:Keys:pfxPath", configuration));
 			var pfxPassword = getRequiredParam("ApplePusher:Keys:pfxPassword", configuration);
 
 
@@ -54,6 +55,7 @@ namespace Adamant.NotificationService.ApplePusher
 		}
 
 		#endregion
+
 
 		public void Start()
 		{
@@ -120,15 +122,21 @@ namespace Adamant.NotificationService.ApplePusher
 
 			switch (args.ResultCode)
 			{
+				case ApnsResult.BadRequest:
+					if (args.Reason.Equals("BadDeviceToken"))
+						OnInvalidToken?.Invoke(this, new InvalidTokenEventArgs(args.Token));
+					
+					break;
+
 				case ApnsResult.TokenExpired:
-					var a = new InvalidTokenEventArgs(args.Token);
-					OnInvalidToken?.Invoke(this, a);
+					OnInvalidToken?.Invoke(this, new InvalidTokenEventArgs(args.Token));
 					break;
 			}
 		}
 
 
 		#endregion
+
 
 		#region Tools
 

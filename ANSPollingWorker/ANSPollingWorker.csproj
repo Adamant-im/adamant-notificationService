@@ -25,5 +25,6 @@
     <ProjectReference Include="..\ANSDataContext\ANSDataContext.csproj" />
     <ProjectReference Include="..\AdamantUtilities\AdamantUtilities.csproj" />
     <ProjectReference Include="..\ANSShared\ANSShared.csproj" />
+    <ProjectReference Include="..\ANSApplePusher\ANSApplePusher.csproj" />
   </ItemGroup>
 </Project>
