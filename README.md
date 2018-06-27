@@ -60,7 +60,13 @@ If you are building your own iOS ADAMANT application and want to use your own AN
 1. Register ADAMANT account for ANS. Just a regular 'U' account.
 2. In iOS source code, type your ANS account's address and public key in AdamantResources struct. It located in AppDelegate.swift.
 3. In ANS config, type in your ANS account's address and private key. See **Configuration** section bellow for more info.
-4. Get your Apple Push certificate, convert it to *.p12 using macOS Keychain app, and place it in {UserHomeDirectory}/.ans/. Type in config your certification's name and password.
+4. To create pfx certificate with ECDsa private key, first, create a key and download it from your Apple Developer [page](https://developer.apple.com/account/ios/authkey/). Put it in some folder. Open Terminal, navigate to this folder, and type:
+```bash
+$ openssl req -new -x509 -key key.p8 -out selfsigned.cer
+$ openssl pkcs12 -export -in selfsigned.cer -inkey key.p8  -out cert.pfx
+```
+Put pfx certificate in ~/.ans, and update config.
+
 5. Done. iOS application will send device tokens to your ANS account, **ANSRegistrationService** will poll signals for your ANS account and register tokens, and **ANSPollingService** will poll new messages and transactions and notify registered devices.
 
 ## Configuration
@@ -100,9 +106,12 @@ Sample configuration file is located in Solution root directory. Booth Polling a
         * initial: Start from height 0.
 
 - ApplePusher: APNS settings. Sections:
-    + Certificate. Properties:
-        * path (string): Your Apple push certificate path.
-        * pass (string, optional): passphrase for certificate.
+    + Keys. Properties:
+        * keyId (string): Your delevoper key id. Created and obtained at your [Auth Keys page](https://developer.apple.com/account/ios/authkey/).
+        * teamId (string): Your app developer team id. Obtained at your Apple Dev [Membership Details](developer.apple.com/account/#/membership/).
+        * bundleAppId (string): Your application bundle id.
+        * pfxPath (string): Path to self-signed *.pfx certificate. Certificate must contain ECDsa private key.
+        * pfxPassword (string): Certificate's password.
     + Payload[]. Apple push notifications payload. Properties:
         * transactionType:
             * 0: transfer
