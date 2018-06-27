@@ -10,8 +10,8 @@ using System;
 namespace Adamant.NotificationService.DataContext.Migrations
 {
     [DbContext(typeof(ANSContext))]
-    [Migration("20180611083124_Provider")]
-    partial class Provider
+    [Migration("20180626144847_ServiceState")]
+    partial class ServiceState
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -35,6 +35,22 @@ namespace Adamant.NotificationService.DataContext.Migrations
                     b.HasKey("ID");
 
                     b.ToTable("Devices");
+                });
+
+            modelBuilder.Entity("Adamant.NotificationService.Models.ServiceState", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<DateTime>("Date");
+
+                    b.Property<int>("LastHeight");
+
+                    b.Property<string>("Service");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("ServiceStates");
                 });
 #pragma warning restore 612, 618
         }

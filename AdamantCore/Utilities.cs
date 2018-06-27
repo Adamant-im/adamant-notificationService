@@ -1,15 +1,19 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 
 namespace Adamant
 {
 	public static class Utilities
 	{
+		static DateTime MagicAdamantDate = new DateTime(2017, 9, 2, 17, 0, 0, DateTimeKind.Utc);
+		static String AddressRegex = "^U([0-9]{6,20})$";
+
 		public static bool IsValidAdamantAddress(string address)
 		{
 			if (string.IsNullOrEmpty(address))
 				return false;
 
-			return true;
+			return Regex.IsMatch(address, AddressRegex);
 		}
 
 		/// <summary>
@@ -32,6 +36,11 @@ namespace Adamant
 			}
 
 			return path;
+		}
+
+		public static DateTime ToDateTime(this double timestamp)
+		{
+			return MagicAdamantDate.AddSeconds(timestamp);
 		}
 	}
 }

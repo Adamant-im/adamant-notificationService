@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Adamant.Models;
 using Adamant.NotificationService.Models;
 
@@ -10,5 +11,19 @@ namespace Adamant.NotificationService
 
 		void Start();
 		void Stop();
+
+		event InvalidTokenHandler OnInvalidToken;
 	}
+
+	public class InvalidTokenEventArgs: EventArgs
+	{
+		public string Token { get; }
+
+		public InvalidTokenEventArgs(string token)
+		{
+			Token = token;
+		}
+	}
+
+	public delegate void InvalidTokenHandler(IPusher sender, InvalidTokenEventArgs eventArgs);
 }

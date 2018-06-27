@@ -32,7 +32,7 @@ You can read about Apple Push Notification service (APNs) and security [here](ht
 In short:
 - We do not use third party services to send notifications. Your tokens and addresses do not fly around the Internet.
 - It is technically impossible to read a message contents from a transaction. And yes, because of this, it is impossible to send a notification with a message preview. No.
-- Your device token is unique for each application on your device. We can't find your facebook page with your device token, generated for the Adamant app.
+- Your device token is unique for each application on your device. We can't find your facebook page with your device token, generated for the ADAMANT app.
 - New device token generated each time you reinstall an app, or just reenable notifications. You can just disable notifications for ADAMANT app, and the device token in ANS database becomes useless. Next time ANS will try to send a push notification, Apple will tell us that the token is broken. That's all.
 - We do have plans to implement 'auto-renew-token' feature on client-side. Later.
 - Device tokens database will not be published. It's a "classic" centralised service, with open-source codebase and hidden production database. If you don't like this idea — you can use ADAMANT without "real" pushes, it's up to you.
@@ -43,28 +43,34 @@ In iOS, app's badge number is sent to you by a server as a part of a push notifi
 We have plans and ideas how to implement this, stay tuned.
 
 ## Installation
-Want to try it out? There is no windows or buttons, just console, so it's boring, only if you wanna bite some C#.
+Want to try it out?
 1. You gonna need a dotnet.core runtime to launch ANS. Go to [Microsoft.com](https://www.microsoft.com/net/learn/get-started) and download SDK for your platform.
 2. Clone or download this repository.
 3. Open terminal/console/cmd and type `dotnet restore` in solution's folder, or just open solution in [Visual Studio](https://www.visualstudio.com) (there is one for macOS now). VS will automatically restore NuGet dependencies.
-4. Grab sample config file at solution's root, edit your connection strings, nodes, delays, certificates, and save it at {HomeDirectory}/.ans/config.json.
+4. Grab sample config file at solution's root, edit your connection strings, nodes, delays, certificates, and save it at {UserHomeDirectory}/.ans/config.json.
 5. At first launch, applications will auto-upgrade your database.
 6. To launch **ANSPollingWorker**, you need your Apple Push certificate, you can grab it from Apple Developer's center. Place it in {UserHomeDirectory}/.ans/, make sure you specified correct path and certificate's password in config. Go to terminal, `cd ANSPollingWorker`, `dotnet run`.
 7. To launch **ANSRegistrationService**, type in your ANS account in config. Go to terminal, `cd ANSRegistrationService`, `dotnet run`.
+8. You can run `dotnet publish -c Release` to create compiled archives. More about dotnet core, and what to do with this 'compiled archives' you can read on [Microsoft.com](https://docs.microsoft.com/ru-ru/dotnet/core/tools/dotnet-publish).
+
+*You will need a certificate to send a push notifications to APNs, which you can get from your Apple Developer account.*
 
 ## My own iOS app and ANS server
 If you are building your own iOS ADAMANT application and want to use your own ANS server, you will need to:
 1. Register ADAMANT account for ANS. Just a regular 'U' account.
-2. In iOS source code, type your ANS account's address and public key in AdamantResources struct. It located in AppDelegate.swift
+2. In iOS source code, type your ANS account's address and public key in AdamantResources struct. It located in AppDelegate.swift.
 3. In ANS config, type in your ANS account's address and private key. See **Configuration** section bellow for more info.
-4. Get your Apple Push certificate, convert it in '*.cert' type using Keychain, and place it in {UserHomeDirectory}/.ans/. Type in config cert name and password.
+4. To create pfx certificate with ECDsa private key, first, create a key and download it from your Apple Developer [page](https://developer.apple.com/account/ios/authkey/). Put it in some folder. Open Terminal, navigate to this folder, and type:
+```bash
+$ openssl req -new -x509 -key key.p8 -out selfsigned.cer
+$ openssl pkcs12 -export -in selfsigned.cer -inkey key.p8  -out cert.pfx
+```
+Put pfx certificate in ~/.ans, and update config.
+
 5. Done. iOS application will send device tokens to your ANS account, **ANSRegistrationService** will poll signals for your ANS account and register tokens, and **ANSPollingService** will poll new messages and transactions and notify registered devices.
 
-You will need a certificate to send a push notifications to APNs, which you can get from your Apple Developer account.
-
-
 ## Configuration
-Sample file is located in Solution root directory. Configuration file loaded from ~/.ans/config.json.
+Sample configuration file is located in Solution root directory. Booth Polling ans Signal registration services loads config from ~/.ans/config.json, so you can have one file for ANS.
 
 #### Sections:
 - Database (optional): Section for database configuration. Params:
@@ -82,21 +88,30 @@ Sample file is located in Solution root directory. Configuration file loaded fro
         * port (int, optional)
 
 - PollingWroker: Polling settings. Properties:
-    + Warmup (bool, optional, default: true): Start with a warmup. If this set to true, Worker will try to fetch latest block height from ADAMANT, and then begins the loop with this height. If param set to false or warmup failed, Worker will start processing from 0, do not try this on live network.
     + Delay (milliseconds as int, optional, default: 2000): delay between two requests.
     + NlogConfig (string, optional, default: 'nlog.config'): path to NLog configuration file.
+    + Startup (enum, optional, default: database): Startup mode. Options:
+        * database: Try to load saved last height from database, and begin from this value. If failed or no value saved, go to 'network' mode.
+        * network: Try to get last transaction from network and use it height as last height value. If failed or no transaction received, go to 'initial' mode.
+        * initial: Start from height 0.
 
 - SignalsRegistration: Signals polling & registration settings. Properties:
-    + Warmup (bool, optional, default: true): Start with a warmup. If this set to true, Worker will try to fetch latest block height from ADAMANT, and then begins the loop with this height. If param set to false or warmup failed, Worker will start processing from 0, do not try this on live network.
     + Delay (milliseconds as int, optional, default: 2000): delay between two requests.
     + NlogConfig (string, optional, default: 'nlog.config'): path to NLog configuration file.
     + Address (string, required): ANS account address to poll signals.
     + PrivateKey (string, required): ANS account private key to decode signals.
+    + Startup (enum, optional, default: database): Startup mode. Options:
+        * database: Try to load saved last height from database, and begin from this value. If failed or no value saved, go to 'network' mode.
+        * network: Try to get last transaction from network and use it height as last height value. If failed or no transaction received, go to 'initial' mode.
+        * initial: Start from height 0.
 
 - ApplePusher: APNS settings. Sections:
-    + Certificate. Properties:
-        * path (string): Your Apple push certificate path.
-        * pass (string, optional): passphrase for certificate.
+    + Keys. Properties:
+        * keyId (string): Your delevoper key id. Created and obtained at your [Auth Keys page](https://developer.apple.com/account/ios/authkey/).
+        * teamId (string): Your app developer team id. Obtained at your Apple Dev [Membership Details](developer.apple.com/account/#/membership/).
+        * bundleAppId (string): Your application bundle id.
+        * pfxPath (string): Path to self-signed *.pfx certificate. Certificate must contain ECDsa private key.
+        * pfxPassword (string): Certificate's password.
     + Payload[]. Apple push notifications payload. Properties:
         * transactionType:
             * 0: transfer

@@ -10,28 +10,18 @@ namespace Adamant.NotificationService.PollingWorker
 {
 	public class ChatPollingWorker: TransactionsPollingWorkerBase
 	{
+		public override string ServiceName { get; } = "ChatPoller";
+
 		public ChatPollingWorker(ILogger<ChatPollingWorker> logger,
 		                         AdamantApi api,
 		                         IPusher pusher,
-		                         DevicesContext context) : base(logger, api, pusher, context)
+		                         ANSContext context) : base(logger, api, pusher, context)
 		{
-		}
-		
-		protected override async Task<int> GetCurrentLastHeight()
-		{
-			var transactions = await _adamantApi.GetChatTransactions(0, 0);
-
-			return transactions?.FirstOrDefault().Height ?? 0;
 		}
 
 		protected override async Task<IEnumerable<Transaction>> GetNewTransactions(int height, int offset = 0)
 		{
-			return await _adamantApi.GetChatTransactions(height, offset);
-		}
-
-		protected override int GetLastHeight(IEnumerable<Transaction> transactions)
-		{
-			return transactions.OrderByDescending(t => t.Height).First().Height;
+			return await Api.GetChatTransactions(height, offset);
 		}
 	}
 }

@@ -14,14 +14,9 @@ namespace Adamant.NotificationService.SignalsRegistration
 {
 	public class SignalsPoller: PollingWorkerBase<Transaction>
 	{
-		#region Dependencies
-
-		private readonly AdamantApi _adamantApi;
-		private readonly DevicesContext _context;
-
-		#endregion
-
 		#region Properties
+
+		public override string ServiceName { get; } = "SignalsPoller";
 
 		public string Address { get; set; }
 		public string PrivateKey { get; set; }
@@ -32,29 +27,16 @@ namespace Adamant.NotificationService.SignalsRegistration
 
 		public SignalsPoller(ILogger<PollingWorkerBase<Transaction>> logger,
 		                     AdamantApi api,
-		                     DevicesContext context) : base(logger)
+		                     ANSContext context) : base(api, context, logger)
 		{
-			_adamantApi = api;
-			_context = context;
 		}
 
 		#endregion
 
-		protected override async Task<int> GetCurrentLastHeight()
-		{
-			var transactions = await _adamantApi.GetChatTransactions(0, 0, ChatType.signal);
-
-			return transactions?.FirstOrDefault()?.Height ?? 0;
-		}
-
 		protected override async Task<IEnumerable<Transaction>> GetNewTransactions(int height, int offset = 0)
 		{
-			return await _adamantApi.GetChatTransactions(height, offset, ChatType.signal, Address);
-		}
-
-		protected override int GetLastHeight(IEnumerable<Transaction> transactions)
-		{
-			return transactions.OrderByDescending(t => t.Height).First().Height;
+			var transactions = await Api.GetChatTransactions(height, offset, ChatType.signal, Address);
+			return transactions.Where(t => t.RecipientId.Equals(Address));
 		}
 
 		protected override void ProcessNewTransactions(IEnumerable<Transaction> transactions)
@@ -92,6 +74,7 @@ namespace Adamant.NotificationService.SignalsRegistration
 						Address = trs.SenderId,
 						Token = deviceInfo.Token,
 						Provider = deviceInfo.Provider,
+						TransactionDate = trs.Timestamp.ToDateTime(),
 						RegistrationDate = DateTime.UtcNow
 					};
 
@@ -118,7 +101,7 @@ namespace Adamant.NotificationService.SignalsRegistration
 
 			var duplicates = new List<Device>();
 			foreach (var device in devices) {
-				var baseDevice = _context.Devices.FirstOrDefault(d => d.Token == device.Token &&
+				var baseDevice = Context.Devices.FirstOrDefault(d => d.Token == device.Token &&
 				                                                 d.Address == device.Address &&
 				                                                 d.Provider == device.Provider);
 
@@ -137,8 +120,8 @@ namespace Adamant.NotificationService.SignalsRegistration
 			}
 
 			try {
-				_context.AddRange(devices);
-				_context.SaveChanges();
+				Context.AddRange(devices);
+				Context.SaveChanges();
 			} catch (Exception e) {
 				Logger.LogCritical(e, "Failed to save context");
 			}

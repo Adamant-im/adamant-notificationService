@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Adamant.Api;
 using Adamant.Models;
@@ -13,19 +12,15 @@ namespace Adamant.NotificationService.PollingWorker
 	{
 		#region Dependencies
 
-		protected readonly AdamantApi _adamantApi;
-		protected readonly DevicesContext _context;
 		protected readonly IPusher _pusher;
 
 		#endregion
 
 		public TransactionsPollingWorkerBase(ILogger<PollingWorkerBase<Transaction>> logger,
-		                                        AdamantApi api,
-		                                        IPusher pusher,
-		                                        DevicesContext context) : base(logger)
+		                                     AdamantApi api,
+		                                     IPusher pusher, 
+		                                     ANSContext context) : base(api, context, logger)
 		{
-			_adamantApi = api;
-			_context = context;
 			_pusher = pusher;
 		}
 
@@ -50,7 +45,7 @@ namespace Adamant.NotificationService.PollingWorker
 				if (string.IsNullOrEmpty(address))
 					continue;
 
-				var registeredDevices = _context.Devices.Where(d => d.Address.Equals(address));
+				var registeredDevices = Context.Devices.Where(d => d.Address.Equals(address));
 
 				foreach (var device in registeredDevices)
 					devicesToNotify.Add((device, recipient.AsEnumerable()));

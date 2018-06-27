@@ -2,18 +2,16 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <RootNamespace>Adamant.Api</RootNamespace>
+    <RootNamespace>Adamant.NotificationService.ApplePusher</RootNamespace>
     <ReleaseVersion>0.3</ReleaseVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Responses\" />
+    <ProjectReference Include="..\ANSCore\ANSCore.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="PushSharp.Core" Version="1.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\AdamantCore\AdamantCore.csproj" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.1.0" />
   </ItemGroup>
 </Project>

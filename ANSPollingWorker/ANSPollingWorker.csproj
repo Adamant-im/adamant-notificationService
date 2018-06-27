@@ -5,7 +5,7 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <RootNamespace>Adamant.NotificationService.PollingWorker</RootNamespace>
     <AssemblyName>ANSPollingWorker</AssemblyName>
-    <ReleaseVersion>0.2</ReleaseVersion>
+    <ReleaseVersion>0.3</ReleaseVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -22,10 +22,9 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\ANSApplePusher\ANSApplePusher.csproj" />
-    <ProjectReference Include="..\ANSCore\ANSCore.csproj" />
-    <ProjectReference Include="..\AdamantApi\AdamantApi.csproj" />
     <ProjectReference Include="..\ANSDataContext\ANSDataContext.csproj" />
     <ProjectReference Include="..\AdamantUtilities\AdamantUtilities.csproj" />
+    <ProjectReference Include="..\ANSShared\ANSShared.csproj" />
+    <ProjectReference Include="..\ANSApplePusher\ANSApplePusher.csproj" />
   </ItemGroup>
 </Project>
