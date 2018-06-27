@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ANSPollingWorker", "ANSPollingWorker\ANSPollingWorker.csproj", "{AAC036DE-835F-40D4-A252-3FE32D224F68}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ANSApplePusher", "ANSApplePusher\ANSApplePusher.csproj", "{CEF11B9D-4DCC-4B45-BA2E-7651CB347FBF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ANSApplePusher_PushSharp", "ANSApplePusher_PushSharp\ANSApplePusher_PushSharp.csproj", "{CEF11B9D-4DCC-4B45-BA2E-7651CB347FBF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ANSCore", "ANSCore\ANSCore.csproj", "{E20C92AF-3D3F-42BB-BEC3-E8072DE5DA71}"
 EndProject
@@ -28,6 +28,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdamantCore.Tests", "AdamantCore.Tests\AdamantCore.Tests.csproj", "{43539A4E-BB9F-4677-9572-6BCBBA695F6D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ANSShared", "ANSShared\ANSShared.csproj", "{9AC7F8FF-8066-4590-BF48-73464CE9C87E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ANSApplePusher", "ANSApplePusher\ANSApplePusher.csproj", "{2444EAA1-E489-4C2D-B2BC-99EF2C6CC545}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -83,6 +85,10 @@ Global
 		{9AC7F8FF-8066-4590-BF48-73464CE9C87E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9AC7F8FF-8066-4590-BF48-73464CE9C87E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9AC7F8FF-8066-4590-BF48-73464CE9C87E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2444EAA1-E489-4C2D-B2BC-99EF2C6CC545}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2444EAA1-E489-4C2D-B2BC-99EF2C6CC545}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2444EAA1-E489-4C2D-B2BC-99EF2C6CC545}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2444EAA1-E489-4C2D-B2BC-99EF2C6CC545}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{C8B1A3CD-9BA7-49DF-91FA-2A150EA92FE8} = {CBAAEC9A-47E4-479C-BB79-F2B8962561FB}
@@ -97,6 +103,7 @@ Global
 		{FCF99C51-6A1E-4329-8B90-24833FC5FB4C} = {CBAAEC9A-47E4-479C-BB79-F2B8962561FB}
 		{43539A4E-BB9F-4677-9572-6BCBBA695F6D} = {CBAAEC9A-47E4-479C-BB79-F2B8962561FB}
 		{9AC7F8FF-8066-4590-BF48-73464CE9C87E} = {05ED861E-7905-46D4-843E-8CEB5356A676}
+		{2444EAA1-E489-4C2D-B2BC-99EF2C6CC545} = {05ED861E-7905-46D4-843E-8CEB5356A676}
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		version = 0.2

@@ -19,6 +19,8 @@ namespace Adamant.NotificationService.ApplePusher
 		private ApnsServiceBroker _broker;
 		private Dictionary<TransactionType, PayloadContent> _contents;
 
+		public event InvalidTokenHandler OnInvalidToken;
+
 		#endregion
 
 		#region Ctor
@@ -124,13 +126,19 @@ namespace Adamant.NotificationService.ApplePusher
 				{
 					var apnsNotification = notificationException.Notification;
 					var statusCode = notificationException.ErrorStatusCode;
-
 					_logger.LogError(notificationException, "Apple Notification Failed: ID={0}, Code={1}, Token={2}, Payload={3}", apnsNotification.Identifier, statusCode, notification.DeviceToken, notification.Payload);
+
+					switch (statusCode)
+					{
+						case ApnsNotificationErrorStatusCode.InvalidTokenSize:
+						case ApnsNotificationErrorStatusCode.InvalidToken:
+							OnInvalidToken(this, new InvalidTokenEventArgs(notification.DeviceToken));
+							break;
+					}
 				}
 				else
 				{
 					_logger.LogError(ex.InnerException, "Apple Notification Failed for some unknown reason, Token={0}, Payload={1}", notification.DeviceToken, notification.Payload);
-					Console.WriteLine($"Apple Notification Failed for some unknown reason : {ex.InnerException}");
 				}
 
 				return true;

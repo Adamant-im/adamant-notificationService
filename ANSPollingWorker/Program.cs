@@ -18,6 +18,7 @@ namespace Adamant.NotificationService.PollingWorker
 		#region Properties
 
 		private static NLog.ILogger _logger;
+		private static ANSContext _context;
 
 		#endregion
 
@@ -44,8 +45,8 @@ namespace Adamant.NotificationService.PollingWorker
 			#region Services
 
 			// Data context
-			var context = new ANSContext(connectionString, provider);
-			context.Database.Migrate();
+			_context = new ANSContext(connectionString, provider);
+			_context.Database.Migrate();
 
 			// API
 			var api = new AdamantApi(configuration);
@@ -68,8 +69,8 @@ namespace Adamant.NotificationService.PollingWorker
 
 			services.AddSingleton<IConfiguration>(configuration);
 			services.AddSingleton<AdamantApi>();
-			services.AddSingleton(typeof(IPusher), typeof(Pusher));
-			services.AddSingleton(context);
+			services.AddSingleton(typeof(IPusher), typeof(ApplePusher.ApplePusher));
+			services.AddSingleton(_context);
 
 			// Polling workers
 			services.AddSingleton<ChatPollingWorker>();
@@ -88,11 +89,12 @@ namespace Adamant.NotificationService.PollingWorker
 
 			#endregion
 
-			var totalDevices = context.Devices.Count();
+			var totalDevices = _context.Devices.Count();
 			_logger.Info("Database initialized. Total devices in db: {0}", totalDevices);
 			_logger.Info("Starting polling. Delay: {0}ms.", delay);
 
 			var applePusher = serviceProvider.GetRequiredService<IPusher>();
+			applePusher.OnInvalidToken += ApplePusher_OnInvalidToken;
 			applePusher.Start();
 
 			var chatWorker = serviceProvider.GetRequiredService<ChatPollingWorker>();
@@ -111,5 +113,18 @@ namespace Adamant.NotificationService.PollingWorker
 		{
 			_logger.Fatal(e.ExceptionObject);
 		}
+
+		static void ApplePusher_OnInvalidToken(IPusher sender, InvalidTokenEventArgs eventArgs)
+		{
+			var device = _context.Devices.FirstOrDefault(d => d.Token.Equals(eventArgs.Token));
+
+			if (device != null)
+			{
+				_logger.Info("Removing invalid/expired token: {0}", eventArgs.Token);
+				_context.Devices.Remove(device);
+				_context.SaveChanges();
+			}
+		}
+
 	}
 }
