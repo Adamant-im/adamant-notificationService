@@ -6,6 +6,7 @@ using SharpPusher;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Linq;
+using Newtonsoft.Json;
 
 namespace Adamant.NotificationService.ApplePusher
 {
@@ -87,14 +88,15 @@ namespace Adamant.NotificationService.ApplePusher
 
 			// Make payload
 
-			var notification = new ApnsNotification
+            var notification = new CustomApnsNotification
 			{
 				Payload = new ApnsPayload
 				{
 					Alert = new ApnsNotificationAlert(),
 					Badge = 1
-				}
-			};
+				},
+                Address = device.Address
+            };
 
 			if (!string.IsNullOrEmpty(content.Sound))
 				notification.Payload.Sound = content.Sound;
@@ -165,4 +167,10 @@ namespace Adamant.NotificationService.ApplePusher
 
 		#endregion
 	}
+}
+
+class CustomApnsNotification : ApnsNotification
+{
+    [JsonProperty("address")]
+    public String Address { get; set; }
 }
