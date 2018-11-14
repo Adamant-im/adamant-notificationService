@@ -54,8 +54,9 @@ namespace Adamant.NotificationService.SignalsRegistration
 			}
 
 			var devices = new List<Device>();
+            var devicesToRemove = new List<Device>();
 
-			foreach (var trs in transactions)
+            foreach (var trs in transactions)
 			{
 				var chat = trs.Asset?.Chat;
 				if (chat == null || chat.Type != ChatType.signal)
@@ -78,7 +79,8 @@ namespace Adamant.NotificationService.SignalsRegistration
 						RegistrationDate = DateTime.UtcNow
 					};
 
-					devices.Add(device);
+                    if (deviceInfo.Action == "remove") devicesToRemove.Add(device);
+                    else devices.Add(device);
 				} catch (CryptographicException e) {
 					Logger.LogError(e,
 					                "Failed to decode message.\nTransactionId: {0}\nMessage: {1}\nNonce: {2}, PublicKey: {3}, SecretKey: {4}",
@@ -125,6 +127,28 @@ namespace Adamant.NotificationService.SignalsRegistration
 			} catch (Exception e) {
 				Logger.LogCritical(e, "Failed to save context");
 			}
-		}
+
+            // Remove Unsubscribed devices
+            if (devicesToRemove.Count > 0) {
+
+                foreach (var device in devicesToRemove)
+                {
+                    var countOfDevices = Context.Devices.Count();
+                    Context.RemoveRange(Context.Devices.Where(d => d.Token == device.Token &&
+                                                              d.Address == device.Address));
+                }
+
+                try
+                {
+                    Context.SaveChanges();
+
+                    Logger.LogInformation("Unsubscribe {0} devices.", devicesToRemove.Count);
+                }
+                catch (Exception e)
+                {
+                    Logger.LogCritical(e, "Failed to save context");
+                }
+            }
+        }
 	}
 }
