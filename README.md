@@ -1,20 +1,14 @@
 # ADAMANT Notification Service (ANS)
-**ANS**! The first of upcoming ADAMANT Services, implemented to make your life with ADAMANT more functional and convenient.
+The first of [ADAMANT Services](https://medium.com/adamant-im/adamant-is-working-on-blockchain-messaging-platform-and-push-notifications-service-765972cce50e), implemented to make instant notifications for ADAMANT applications.
 
-ADAMANT Blockchain and Messenger are fully functional without ANS and other Services. The goal of ADAMANT Services and ANS is to provide features that can not be *(or can be, but it's a really bad idea to even try to)* implemented on the Blockchain.
-
-More on [adamant.im](https://adamant.im). *(soon)*
-
-## This is a Pre-release!
-Project is in early development, so excpect bugs and bad code.
-Right now only iOS pushes implemented, PWA will be the next one.
+Note: ADAMANT Blockchain and Messenger apps are fully functional without ANS and other Services. The goal of ADAMANT Services and ANS is to provide features that can not be implemented on the Blockchain. More on [adamant.im](https://adamant.im).
 
 ## Application
 There are two main parts:
 
 **ANSPollingWorker** — console application that polls ADAMANT nodes for new transactions and checks for registered devices of receivers. If there is a registered device for the recipient of the transaction — sends a notification.
 
-**ANSSignalsRegistration** - console application that polls ADAMANT nodes for new service signals (transaction with chat asset, ChatType = 3) for device tokens. Message payload must be serialized in JSON and encrypted as other chat transactions.
+**ANSSignalsRegistration** — console application that polls ADAMANT nodes for new service signals (transaction with chat asset, ChatType = 3, see [AIP-6: Signal Messages](https://aips.adamant.im/AIPS/aip-6)) for device tokens. Message payload must be serialized in JSON and encrypted as other chat transactions.
 
 Payload format:
 ```json
@@ -23,7 +17,7 @@ Payload format:
     "provider": "apns"
 }
 ```
-*'apns' stands for Apple Push Notification service*
+*'apns' stands for Apple Push Notification service*.
 
 ## QA
 #### Device token? What about security?
@@ -31,7 +25,7 @@ You can read about Apple Push Notification service (APNs) and security [here](ht
 
 In short:
 - We do not use third party services to send notifications. Your tokens and addresses do not fly around the Internet.
-- It is technically impossible to read a message contents from a transaction. And yes, because of this, it is impossible to send a notification with a message preview. No.
+- It is technically impossible to read a message contents from a transaction. And yes, because of this, it is impossible to send a notification with a message preview.
 - Your device token is unique for each application on your device. We can't find your facebook page with your device token, generated for the ADAMANT app.
 - New device token generated each time you reinstall an app, or just reenable notifications. You can just disable notifications for ADAMANT app, and the device token in ANS database becomes useless. Next time ANS will try to send a push notification, Apple will tell us that the token is broken. That's all.
 - We do have plans to implement 'auto-renew-token' feature on client-side. Later.
