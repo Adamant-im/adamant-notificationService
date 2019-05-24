@@ -1,20 +1,14 @@
 # ADAMANT Notification Service (ANS)
-**ANS**! The first of upcoming ADAMANT Services, implemented to make your life with ADAMANT more functional and convenient.
+The first of [ADAMANT Services](https://medium.com/adamant-im/adamant-is-working-on-blockchain-messaging-platform-and-push-notifications-service-765972cce50e), implemented to make secure instant notifications for ADAMANT applications.
 
-ADAMANT Blockchain and Messenger are fully functional without ANS and other Services. The goal of ADAMANT Services and ANS is to provide features that can not be *(or can be, but it's a really bad idea to even try to)* implemented on the Blockchain.
-
-More on [adamant.im](https://adamant.im). *(soon)*
-
-## This is a Pre-release!
-Project is in early development, so excpect bugs and bad code.
-Right now only iOS pushes implemented, PWA will be the next one.
+Note: ADAMANT Blockchain and Messenger apps are fully functional without ANS and other Services. The goal of ADAMANT Services and ANS is to provide features that can not be implemented on the Blockchain. More on [adamant.im](https://adamant.im).
 
 ## Application
 There are two main parts:
 
 **ANSPollingWorker** — console application that polls ADAMANT nodes for new transactions and checks for registered devices of receivers. If there is a registered device for the recipient of the transaction — sends a notification.
 
-**ANSSignalsRegistration** - console application that polls ADAMANT nodes for new service signals (transaction with chat asset, ChatType = 3) for device tokens. Message payload must be serialized in JSON and encrypted as other chat transactions.
+**ANSSignalsRegistration** — console application that polls ADAMANT nodes for new service signals (transaction with chat asset, ChatType = 3, see [AIP-6: Signal Messages](https://aips.adamant.im/AIPS/aip-6)) for device tokens. Message payload must be serialized in JSON and encrypted as other chat transactions.
 
 Payload format:
 ```json
@@ -23,24 +17,22 @@ Payload format:
     "provider": "apns"
 }
 ```
-*'apns' stands for Apple Push Notification service*
+*'apns' stands for Apple Push Notification service*.
 
 ## QA
-#### Device token? What about security?
+### Device token? What about security?
 You can read about Apple Push Notification service (APNs) and security [here](https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/APNSOverview.html) and google more about it.
 
 In short:
 - We do not use third party services to send notifications. Your tokens and addresses do not fly around the Internet.
-- It is technically impossible to read a message contents from a transaction. And yes, because of this, it is impossible to send a notification with a message preview. No.
+- It is technically impossible to read a message contents from a transaction. And yes, because of this, it is impossible to send a notification with a message preview.
 - Your device token is unique for each application on your device. We can't find your facebook page with your device token, generated for the ADAMANT app.
 - New device token generated each time you reinstall an app, or just reenable notifications. You can just disable notifications for ADAMANT app, and the device token in ANS database becomes useless. Next time ANS will try to send a push notification, Apple will tell us that the token is broken. That's all.
-- We do have plans to implement 'auto-renew-token' feature on client-side. Later.
+- We do have plans to implement 'auto-renew-token' feature on client-side.
 - Device tokens database will not be published. It's a "classic" centralised service, with open-source codebase and hidden production database. If you don't like this idea — you can use ADAMANT without "real" pushes, it's up to you.
 
-#### iOS App Badge?
-In iOS, app's badge number is sent to you by a server as a part of a push notification, it's not handled by an application, as application can be even terminated and unloaded from memory at the moment. Adamant, and ANS in particular, does not know how many messages you haven't read. At the moment, it is impossible to show a real number on the app's badge. Workaround — just show '1'. Symbols like '\*' not supported by iOS, only integers.
-
-We have plans and ideas how to implement this, stay tuned.
+### iOS App Badge?
+In iOS, app's badge number is sent to you by a server as a part of a push notification, it's not handled by an application, as application can be even terminated and unloaded from memory at the moment. ADAMANT, and ANS in particular, does not know how many messages you haven't read. At the moment, it is impossible to show a real number on the app's badge. Workaround — just show '1'. Symbols like '\*' not supported by iOS, only integers.
 
 ## Installation
 Want to try it out?
@@ -58,9 +50,9 @@ Want to try it out?
 ## My own iOS app and ANS server
 If you are building your own iOS ADAMANT application and want to use your own ANS server, you will need to:
 1. Register ADAMANT account for ANS. Just a regular 'U' account.
-2. In iOS source code, type your ANS account's address and public key in AdamantResources struct. It located in AppDelegate.swift.
+2. In iOS source code, type your ANS account's address and public key in AdamantResources struct. It is located in AppDelegate.swift.
 3. In ANS config, type in your ANS account's address and private key. See **Configuration** section bellow for more info.
-4. To create pfx certificate with ECDsa private key, first, create a key and download it from your Apple Developer [page](https://developer.apple.com/account/ios/authkey/). Put it in some folder. Open Terminal, navigate to this folder, and type:
+4. To create pfx certificate with ECDsa private key, first, create a key and download it from your [Apple Developer page](https://developer.apple.com/account/ios/authkey/). Put it in some folder. Open Terminal, navigate to this folder, and type:
 ```bash
 $ openssl req -new -x509 -key key.p8 -out selfsigned.cer
 $ openssl pkcs12 -export -in selfsigned.cer -inkey key.p8  -out cert.pfx
