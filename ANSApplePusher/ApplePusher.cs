@@ -87,14 +87,15 @@ namespace Adamant.NotificationService.ApplePusher
 
 			// Make payload
 
-			var notification = new ApnsNotification
-			{
+            var notification = new AdamantApnsNotification
+            {
 				Payload = new ApnsPayload
 				{
 					Alert = new ApnsNotificationAlert(),
 					Badge = 1
-				}
-			};
+				},
+                RecipientAddress = device.Address
+            };
 
 			if (!string.IsNullOrEmpty(content.Sound))
 				notification.Payload.Sound = content.Sound;
