@@ -79,8 +79,16 @@ namespace Adamant.NotificationService.SignalsRegistration
 						RegistrationDate = DateTime.UtcNow
 					};
 
-                    if (deviceInfo.Action == "remove") devicesToRemove.Add(device);
-                    else devices.Add(device);
+                    switch (deviceInfo.Action)
+                    {
+                        case SignalAction.add:
+                            devices.Add(device);
+                            break;
+
+                        case SignalAction.remove:
+                            devicesToRemove.Add(device);
+                            break;
+                    }
 				} catch (CryptographicException e) {
 					Logger.LogError(e,
 					                "Failed to decode message.\nTransactionId: {0}\nMessage: {1}\nNonce: {2}, PublicKey: {3}, SecretKey: {4}",
@@ -133,7 +141,6 @@ namespace Adamant.NotificationService.SignalsRegistration
 
                 foreach (var device in devicesToRemove)
                 {
-                    var countOfDevices = Context.Devices.Count();
                     Context.RemoveRange(Context.Devices.Where(d => d.Token == device.Token &&
                                                               d.Address == device.Address));
                 }
@@ -141,7 +148,6 @@ namespace Adamant.NotificationService.SignalsRegistration
                 try
                 {
                     Context.SaveChanges();
-
                     Logger.LogInformation("Unsubscribe {0} devices.", devicesToRemove.Count);
                 }
                 catch (Exception e)

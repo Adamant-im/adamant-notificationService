@@ -10,7 +10,11 @@ namespace Adamant.NotificationService.SignalsRegistration
 		[JsonProperty("provider")]
 		public string Provider { get; set; }
 
+        /// <summary>
+        /// // "add" - enable push notification, "remove" - disable notification for specific token and address
+        /// </summary>
         [JsonProperty(PropertyName = "action", Required = Required.Default)]
-        public string Action { get; set; } = "add"; // "add" - enable push notification, "remove" - disable notification for specific token and address 
+        [JsonConverter(typeof(SignalActionConverter))]
+        public SignalAction Action { get; set; } = SignalAction.add;
     }
 }
