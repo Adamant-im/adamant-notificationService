@@ -3,9 +3,12 @@ using SharpPusher;
 
 namespace Adamant.NotificationService.ApplePusher
 {
-    class AdamantApnsNotification: ApnsNotification
+    internal class AdamantApnsNotification: ApnsNotification
     {
         [JsonProperty("recipient-address")]
         public string RecipientAddress { get; set; }
+
+        [JsonProperty("txn-id")]
+        public string TxnId { get; set; }
     }
 }
