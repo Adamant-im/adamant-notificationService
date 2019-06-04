@@ -8,6 +8,9 @@ namespace SharpPusherSample
     {
         [JsonProperty("txn-id")]
         public string TxnId { get; set; }
+
+        [JsonProperty("push-recipient")]
+        public string PushRecipient { get; set; }
     }
 
     class Program
@@ -22,7 +25,7 @@ namespace SharpPusherSample
 
 			var deviceToken = "";
 
-			var pusher = new ApnsPusher(keyId, teamId, bundleAppId, keyPath, keyPassword, ApnsEnvironment.Production);
+			var pusher = new ApnsPusher(keyId, teamId, bundleAppId, keyPath, keyPassword, ApnsEnvironment.Sandbox);
 
 			var notification = new ExtendedApnsNotification
             {
@@ -36,7 +39,8 @@ namespace SharpPusherSample
 					Badge = 7,
                     MutableContent = 1
                 },
-                TxnId = ""
+                TxnId = "",
+                PushRecipient = ""
             };
 
 			pusher.OnNotificationSuccess += OnNotificationSuccess;
@@ -44,6 +48,7 @@ namespace SharpPusherSample
 
 			Console.WriteLine("Sending notification...");
 			pusher.SendNotificationAsync(notification, deviceToken);
+            Console.ReadKey();
 		}
 
 		static void OnNotificationSuccess(object sender, NotificationSuccessEventArgs<ApnsNotification> args)

@@ -1,11 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <RootNamespace>Adamant.NotificationService.ApplePusher</RootNamespace>
     <ReleaseVersion>0.3</ReleaseVersion>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <LangVersion>Default</LangVersion>
+  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\ANSCore\ANSCore.csproj" />
   </ItemGroup>
