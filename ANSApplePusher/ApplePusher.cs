@@ -96,7 +96,7 @@ namespace Adamant.NotificationService.ApplePusher
                         Badge = 1,
                         MutableContent = 1
                     },
-                    RecipientAddress = device.Address,
+                    PushRecipient = device.Address,
                     TxnId = trs.Id
                 };
 

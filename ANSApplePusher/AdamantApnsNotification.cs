@@ -5,8 +5,8 @@ namespace Adamant.NotificationService.ApplePusher
 {
     internal class AdamantApnsNotification: ApnsNotification
     {
-        [JsonProperty("recipient-address")]
-        public string RecipientAddress { get; set; }
+        [JsonProperty("push-recipient")]
+        public string PushRecipient { get; set; }
 
         [JsonProperty("txn-id")]
         public string TxnId { get; set; }
