@@ -76,37 +76,43 @@ namespace Adamant.NotificationService.ApplePusher
 			if (transactions == null || !transactions.Any())
 				return;
 
-			// Get transaction type, check if we have payload content for this type
+            var notifications = new List<(ApnsNotification notification, string token)>();
 
-			var type = transactions.First().Type;
+            // Get transaction type, check if we have payload content for this type
 
-			if (!_contents.ContainsKey(type))
-				return;
-
-			var content = _contents[type];
-
-			// Make payload
-
-            var notification = new AdamantApnsNotification
+            foreach (var trs in transactions)
             {
-				Payload = new ApnsPayload
-				{
-					Alert = new ApnsNotificationAlert(),
-					Badge = 1
-				},
-                RecipientAddress = device.Address
-            };
+                if (!_contents.ContainsKey(trs.Type))
+                    continue;
 
-			if (!string.IsNullOrEmpty(content.Sound))
-				notification.Payload.Sound = content.Sound;
+                var content = _contents[trs.Type];
 
-			if (!string.IsNullOrEmpty(content.Body))
-				notification.Payload.Alert.BodyLocalizationKey = content.Body;
+                // Make payload
+                var notification = new AdamantApnsNotification
+                {
+                    Payload = new ApnsPayload
+                    {
+                        Alert = new ApnsNotificationAlert(),
+                        Badge = 1,
+                        MutableContent = 1
+                    },
+                    PushRecipient = device.Address,
+                    TxnId = trs.Id
+                };
 
-			if (!string.IsNullOrEmpty(content.Title))
-				notification.Payload.Alert.TitleLocalizationKey = content.Title;
+                if (!string.IsNullOrEmpty(content.Sound))
+                    notification.Payload.Sound = content.Sound;
 
-			pusher.SendNotificationAsync(notification, device.Token);
+                if (!string.IsNullOrEmpty(content.Body))
+                    notification.Payload.Alert.BodyLocalizationKey = content.Body;
+
+                if (!string.IsNullOrEmpty(content.Title))
+                    notification.Payload.Alert.TitleLocalizationKey = content.Title;
+
+                notifications.Add((notification, device.Token));
+            }
+
+			pusher.SendNotificationsAsync(notifications);
 		}
 
 

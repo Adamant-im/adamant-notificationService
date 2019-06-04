@@ -7,9 +7,7 @@
   </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="SharpPusher" Version="0.1.1" />
-    </ItemGroup>
-    <ItemGroup>
       <ProjectReference Include="..\ANSCore\ANSCore.csproj" />
+      <ProjectReference Include="..\SharpPusher\SharpPusher.csproj" />
     </ItemGroup>
 </Project>
