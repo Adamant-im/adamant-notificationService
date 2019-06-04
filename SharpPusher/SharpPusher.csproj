@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+        <PackageId>SharpPusher</PackageId>
+        <Version>0.1.1</Version>
+        <Authors>RealBonus</Authors>
+        <RepositoryUrl>https://github.com/RealBonus/SharpPusher</RepositoryUrl>
+        <PackageTags>push;apns;core</PackageTags>
+        <ReleaseVersion>0.4</ReleaseVersion>
+        <PackageProjectUrl>https://github.com/RealBonus/SharpPusher</PackageProjectUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="jose-jwt" Version="2.4.0" />
+  </ItemGroup>
+</Project>

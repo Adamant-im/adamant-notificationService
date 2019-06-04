@@ -2,14 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <ReleaseVersion>0.3</ReleaseVersion>
+    <ReleaseVersion>0.4</ReleaseVersion>
     <RootNamespace>Adamant.NotificationService.ApplePusher</RootNamespace>
   </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="SharpPusher" Version="0.1.1" />
-    </ItemGroup>
-    <ItemGroup>
       <ProjectReference Include="..\ANSCore\ANSCore.csproj" />
+      <ProjectReference Include="..\SharpPusher\SharpPusher.csproj" />
     </ItemGroup>
 </Project>

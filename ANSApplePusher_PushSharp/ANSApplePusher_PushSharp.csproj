@@ -6,12 +6,15 @@
     <ReleaseVersion>0.3</ReleaseVersion>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <LangVersion>Default</LangVersion>
+  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\ANSCore\ANSCore.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="PushSharp.Core" Version="1.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.1.0" />
+    <PackageReference Include="PushSharp.Core" Version="1.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
   </ItemGroup>
 </Project>
