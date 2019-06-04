@@ -7,7 +7,7 @@
         <Authors>RealBonus</Authors>
         <RepositoryUrl>https://github.com/RealBonus/SharpPusher</RepositoryUrl>
         <PackageTags>push;apns;core</PackageTags>
-        <ReleaseVersion>0.3</ReleaseVersion>
+        <ReleaseVersion>0.4</ReleaseVersion>
         <PackageProjectUrl>https://github.com/RealBonus/SharpPusher</PackageProjectUrl>
   </PropertyGroup>
 

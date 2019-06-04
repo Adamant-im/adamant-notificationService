@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <ReleaseVersion>0.3</ReleaseVersion>
+    <ReleaseVersion>0.4</ReleaseVersion>
     <RootNamespace>Adamant.NotificationService.ApplePusher</RootNamespace>
   </PropertyGroup>
 

@@ -5,7 +5,7 @@
 
     <IsPackable>false</IsPackable>
     <RootNamespace>Adamant.Tests</RootNamespace>
-    <ReleaseVersion>0.3</ReleaseVersion>
+    <ReleaseVersion>0.4</ReleaseVersion>
   </PropertyGroup>
 
   <ItemGroup>
