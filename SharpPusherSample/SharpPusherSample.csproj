@@ -15,4 +15,17 @@
   <ItemGroup>
     <ProjectReference Include="..\SharpPusher\SharpPusher.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="NLog" Version="4.6.4" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="1.5.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="NLog.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="NLog.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
 </Project>

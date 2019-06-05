@@ -1,5 +1,8 @@
 ﻿using System;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using NLog;
+using NLog.Extensions.Logging;
 using SharpPusher;
 
 namespace SharpPusherSample
@@ -25,7 +28,12 @@ namespace SharpPusherSample
 
 			var deviceToken = "";
 
-			var pusher = new ApnsPusher(keyId, teamId, bundleAppId, keyPath, keyPassword, ApnsEnvironment.Sandbox);
+            NLog.LogManager.LoadConfiguration("NLog.config");
+            var loggerFactory = new LoggerFactory();
+            loggerFactory.AddNLog(new NLogProviderOptions { CaptureMessageTemplates = true, CaptureMessageProperties = true });
+            var logger = loggerFactory.CreateLogger<ApnsPusher>();
+
+            var pusher = new ApnsPusher(logger, keyId, teamId, bundleAppId, keyPath, keyPassword, ApnsEnvironment.Production);
 
 			var notification = new ExtendedApnsNotification
             {
@@ -60,6 +68,5 @@ namespace SharpPusherSample
 		{
 			Console.WriteLine("Notification failed. Code: {0}, Reason: {1}", args.ResultCode, args.Reason);
 		}
-
-	}
+    }
 }
