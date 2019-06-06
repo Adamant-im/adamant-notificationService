@@ -36,8 +36,7 @@ In short:
 - We do not use third party services to send notifications. Your tokens and addresses do not fly around the Internet.
 - It is technically impossible to read a message contents from a transaction. And yes, because of this, it is impossible to send a notification with a message preview.
 - Your device token is unique for each application on your device. We can't find your facebook page with your device token, generated for the ADAMANT app.
-- New device token generated each time you reinstall an app, or just reenable notifications. You can just disable notifications for ADAMANT app, and the device token in ANS database becomes useless. Next time ANS will try to send a push notification, Apple will tell us that the token is broken. That's all.
-- We do have plans to implement 'auto-renew-token' feature on client-side.
+- New device token generated each time you reinstall an app, or just reenable notifications. You can just disable notifications for ADAMANT app, and the device token in ANS database becomes useless. Next time ANS will try to send a push notification, Apple will tell us that the token is broken.
 - Device tokens database will not be published. It's a "classic" centralised service, with open-source codebase and hidden production database.
 
 ### iOS App Badge?
