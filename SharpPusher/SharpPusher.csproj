@@ -1,13 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
         <PackageId>SharpPusher</PackageId>
         <Version>0.1.1</Version>
         <Authors>RealBonus</Authors>
         <RepositoryUrl>https://github.com/RealBonus/SharpPusher</RepositoryUrl>
         <PackageTags>push;apns;core</PackageTags>
-        <ReleaseVersion>0.4</ReleaseVersion>
+        <ReleaseVersion>0.4.1</ReleaseVersion>
         <PackageProjectUrl>https://github.com/RealBonus/SharpPusher</PackageProjectUrl>
   </PropertyGroup>
 

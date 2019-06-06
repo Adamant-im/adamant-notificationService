@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
-    <ReleaseVersion>0.4</ReleaseVersion>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <ReleaseVersion>0.4.1</ReleaseVersion>
     <RootNamespace>Adamant.NotificationService.ApplePusher</RootNamespace>
   </PropertyGroup>
 
