@@ -33,18 +33,18 @@ Payload format:
 You can read about Apple Push Notification service (APNs) and security [here](https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/APNSOverview.html) and google more about it.
 
 In short:
-- We do not use third party services to send notifications. Your tokens and addresses do not fly around the Internet.
-- It is technically impossible to read a message contents from a transaction. And yes, because of this, it is impossible to send a notification with a message preview.
+- We do not use third party services to send notifications. Your tokens and addresses doesn't fly around the Internet.
+- It's technically impossible to read a message contents from a transaction for ANS and impossible to include message into push content.
+- Starting from version 0.4, ANS will include 'txn-id' param in the push content with the transaction id. A client can get the transaction from a node and decode the message locally on the device, using a locally stored private key or passphrase. On iOS this is handled by [NotificationServiceExtension](https://developer.apple.com/documentation/usernotifications/unnotificationserviceextension), passphrase stored securely in [Keychain](https://developer.apple.com/documentation/security/keychain_services).
 - Your device token is unique for each application on your device. We can't find your facebook page with your device token, generated for the ADAMANT app.
 - New device token generated each time you reinstall an app, or just reenable notifications. You can just disable notifications for ADAMANT app, and the device token in ANS database becomes useless. Next time ANS will try to send a push notification, Apple will tell us that the token is broken.
-- Device tokens database will not be published. It's a "classic" centralised service, with open-source codebase and hidden production database.
 
 ### iOS App Badge?
-In iOS, app's badge number is sent to you by a server as a part of a push notification, it's not handled by an application, as application can be even terminated and unloaded from memory at the moment. ADAMANT, and ANS in particular, does not know how many messages you haven't read. Alternative solution - handle it locally on a device. Create an iOS NotificationServiceExtension - an app extension, that can modify notification content. You can read more about it [here](https://developer.apple.com/documentation/usernotifications/modifying_content_in_newly_delivered_notifications).
+In iOS, app's badge number is sent to you by a server as a part of a push notification, it's not handled by an application, as application can be even terminated and unloaded from memory at the moment. ANS doesn't know how many messages you haven't read. Alternative solution - handle it locally on a device by the NotificationServiceExtension - an app extension, that can modify notification content.
 
 ## Installation
 ### .NET Core version alert!
-APNs requires HTTP/2 connection. dotnet core 2.1 and 2.2 **does not support it**. Version 2.0 supports it *on some operation systems*. HTTP/2 support planned in version 3.0, latest version at the moment: 3.0.100-preview5-011568, and it's supports HTTP/2, so go for the preview builds. You can create a self-conteined build for machine without preview runtime with 
+APNs requires HTTP/2 connection. dotnet core 2.1 and 2.2 **does not support it**. Version 2.0 supports it *on some operation systems*. HTTP/2 planned in .NET Core 3.0. The newest version at the moment is 3.0.100-preview5-011568, and it supports HTTP/2, so go for the preview releases. You can create a self-conteined build for a machine without 3.0 runtime on a machine with 3.0 SDK.
 `dotnet publish -c Release -r linux-64 -o {output path} -f netcoreapp3.0`
 
 [more](https://docs.microsoft.com/ru-ru/dotnet/core/rid-catalog) about -r, [more](https://docs.microsoft.com/ru-ru/dotnet/standard/frameworks) about -f, [download](https://dotnet.microsoft.com/download/dotnet-core/3.0) dotnet core 3.0 SDK.
