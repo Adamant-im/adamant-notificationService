@@ -14,9 +14,18 @@ Payload format:
 ```json
 {
     "token": "DeviceToken",
-    "provider": "apns"
+    "provider": "apns",
+    "action": "add"
 }
 ```
+- token: Your device token
+- provider: Your push provider.
+    + apns: Release builds
+    + apns-sandbox: Debug builds. (not yet supported).
+- action (optional): Signal action
+    + add (default): register new devise
+    + remove: unregister device
+
 *'apns' stands for Apple Push Notification service*.
 
 ## QA
@@ -29,12 +38,18 @@ In short:
 - Your device token is unique for each application on your device. We can't find your facebook page with your device token, generated for the ADAMANT app.
 - New device token generated each time you reinstall an app, or just reenable notifications. You can just disable notifications for ADAMANT app, and the device token in ANS database becomes useless. Next time ANS will try to send a push notification, Apple will tell us that the token is broken. That's all.
 - We do have plans to implement 'auto-renew-token' feature on client-side.
-- Device tokens database will not be published. It's a "classic" centralised service, with open-source codebase and hidden production database. If you don't like this idea — you can use ADAMANT without "real" pushes, it's up to you.
+- Device tokens database will not be published. It's a "classic" centralised service, with open-source codebase and hidden production database.
 
 ### iOS App Badge?
-In iOS, app's badge number is sent to you by a server as a part of a push notification, it's not handled by an application, as application can be even terminated and unloaded from memory at the moment. ADAMANT, and ANS in particular, does not know how many messages you haven't read. At the moment, it is impossible to show a real number on the app's badge. Workaround — just show '1'. Symbols like '\*' not supported by iOS, only integers.
+In iOS, app's badge number is sent to you by a server as a part of a push notification, it's not handled by an application, as application can be even terminated and unloaded from memory at the moment. ADAMANT, and ANS in particular, does not know how many messages you haven't read. Alternative solution - handle it locally on a device. Create an iOS NotificationServiceExtension - an app extension, that can modify notification content. You can read more about it [here](https://developer.apple.com/documentation/usernotifications/modifying_content_in_newly_delivered_notifications).
 
 ## Installation
+### .NET Core version alert!
+APNs requires HTTP/2 connection. dotnet core 2.1 and 2.2 **does not support it**. Version 2.0 supports it *on some operation systems*. HTTP/2 support planned in version 3.0, latest version at the moment: 3.0.100-preview5-011568, and it's supports HTTP/2, so go for the preview builds. You can create a self-conteined build for machine without preview runtime with 
+`dotnet publish -c Release -r linux-64 -o {output path} -f netcoreapp3.0`
+
+[more](https://docs.microsoft.com/ru-ru/dotnet/core/rid-catalog) about -r, [more](https://docs.microsoft.com/ru-ru/dotnet/standard/frameworks) about -f, [download](https://dotnet.microsoft.com/download/dotnet-core/3.0) dotnet core 3.0 SDK.
+
 Want to try it out?
 1. You gonna need a dotnet.core runtime to launch ANS. Go to [Microsoft.com](https://www.microsoft.com/net/learn/get-started) and download SDK for your platform.
 2. Clone or download this repository.
@@ -50,7 +65,7 @@ Want to try it out?
 ## My own iOS app and ANS server
 If you are building your own iOS ADAMANT application and want to use your own ANS server, you will need to:
 1. Register ADAMANT account for ANS. Just a regular 'U' account.
-2. In iOS source code, type your ANS account's address and public key in AdamantResources struct. It is located in AppDelegate.swift.
+2. In iOS source code, type your ANS account's address and public key in AdamantResources struct.
 3. In ANS config, type in your ANS account's address and private key. See **Configuration** section bellow for more info.
 4. To create pfx certificate with ECDsa private key, first, create a key and download it from your [Apple Developer page](https://developer.apple.com/account/ios/authkey/). Put it in some folder. Open Terminal, navigate to this folder, and type:
 ```bash
