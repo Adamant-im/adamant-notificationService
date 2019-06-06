@@ -7,7 +7,7 @@ using Jose;
 using Newtonsoft.Json;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace SharpPusher
 {
@@ -43,13 +43,16 @@ namespace SharpPusher
 		public string JwtToken { get; private set; }
 		public DateTime JwtTokenDate { get; private set; }
 
-		#endregion
+        private readonly ILogger<ApnsPusher> _logger;
+
+        #endregion
 
 
-		#region Ctor
+        #region Ctor
 
-		public ApnsPusher(string keyId, string teamId, string bundleAppId, string certificatePath, string certificatePassword, ApnsEnvironment environment, int port = 443)
+        public ApnsPusher(ILogger<ApnsPusher> logger, string keyId, string teamId, string bundleAppId, string certificatePath, string certificatePassword, ApnsEnvironment environment, int port = 443)
 		{
+            _logger = logger;
 			Environment = environment;
 			KeyId = keyId;
 			TeamId = teamId;
@@ -66,8 +69,16 @@ namespace SharpPusher
 					break;
 			}
 
-			var certificate = new X509Certificate2(certificatePath, certificatePassword);
-			PrivateKey = certificate.GetECDsaPrivateKey();
+            try
+            {
+                var certificate = new X509Certificate2(certificatePath, certificatePassword);
+                PrivateKey = certificate.GetECDsaPrivateKey();
+            }
+            catch (Exception e)
+            {
+                _logger.LogCritical(e, $"Failed to load certeficate at {certificatePath} with password {certificatePassword}\n");
+                throw;
+            }
 
 			if (PrivateKey == null)
 				throw new ArgumentException("Certificate does not contains ECDsa private key.");
@@ -129,9 +140,10 @@ namespace SharpPusher
 
 			var uri = new Uri(Host + deviceToken);
 
-			try {
-				using (var handler = new Http2Handler())
-				using (var client = new HttpClient(handler))
+            AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2Support", true);
+
+            try {
+                using (var client = new HttpClient())
 				{
 					// Prepare HTTP Request
 					var request = new HttpRequestMessage(HttpMethod.Post, uri);
@@ -141,12 +153,18 @@ namespace SharpPusher
                     request.Headers.Add("apns-topic", BundleAppId);
                     request.Content = payloadBytes;
 
+                    request.Version = new Version(2, 0);
+
                     lock (jwtLock) {
                         request.Headers.Add("authorization", $"bearer {JwtToken}");
                     }
 
-					// Send request
-					var response = await client.SendAsync(request);
+                    _logger.LogDebug($"Push URI: {uri}\nPayload content: {payload}\nHeaders: {request.Headers.ToString()}");
+
+                    // Send request
+                    var response = await client.SendAsync(request);
+
+                    _logger.LogDebug($"Response: {response.ToString()}");
 
 					// Handle response
 					var apnsResult = (ApnsResult)response.StatusCode;
@@ -196,8 +214,11 @@ namespace SharpPusher
 				{ "kid", KeyId }
 			};
 
+			_logger.LogDebug("Renewed JWT token");
+
 			return JWT.Encode(payload, PrivateKey, Algorithm, header);
-		}
+
+        }
 
         #endregion
     }

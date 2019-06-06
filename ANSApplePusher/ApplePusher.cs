@@ -26,7 +26,7 @@ namespace Adamant.NotificationService.ApplePusher
 
 		#region Ctor
 
-		public ApplePusher(ILogger<ApplePusher> logger, IConfiguration configuration)
+		public ApplePusher(ILogger<ApplePusher> logger, ILogger<ApnsPusher> internalLogger, IConfiguration configuration)
 		{
 			_logger = logger;
 			_configuration = configuration;
@@ -49,7 +49,7 @@ namespace Adamant.NotificationService.ApplePusher
 			var pfxPassword = getRequiredParam("ApplePusher:Keys:pfxPassword", configuration);
 
 
-			pusher = new ApnsPusher(keyId, teamId, bundleAppId, pfxPath, pfxPassword, ApnsEnvironment.Production);
+			pusher = new ApnsPusher(internalLogger, keyId, teamId, bundleAppId, pfxPath, pfxPassword, ApnsEnvironment.Production);
 			pusher.OnNotificationSuccess += Pusher_OnNotificationSuccess;
 			pusher.OnNotificationFailed += Pusher_OnNotificationFailed;
 		}
