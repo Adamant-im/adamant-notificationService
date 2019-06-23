@@ -110,9 +110,9 @@ namespace SharpPusher
                 }
             }
 
-            foreach (var pair in notifications)
+            foreach (var (notification, token) in notifications)
             {
-                Task.Run(() => SendNotificationInternal(pair.notification, pair.token));
+                Task.Run(() => SendNotificationInternal(notification, token));
             }
         }
 
