@@ -53,30 +53,36 @@ Payload format:
 
 ### Device token? What about security?
 
-You can read about Apple Push Notification service (APNs) and security [here](https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/APNSOverview.html) and google more about it.
+You can read about Apple Push Notification Service (APNS) and security on [Apple's docs](https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/APNSOverview.html).
 
 In short:
+
 - We do not use third party services to send notifications. Your tokens and addresses doesn't fly around the Internet.
-- It's technically impossible to read a message contents from a transaction for ANS and impossible to include message into push content.
-- Starting from version 0.4, ANS will include 'txn-id' param in the push content with the transaction id. A client can get the transaction from a node and decode the message locally on the device, using a locally stored private key or passphrase. On iOS this is handled by [NotificationServiceExtension](https://developer.apple.com/documentation/usernotifications/unnotificationserviceextension), passphrase stored securely in [Keychain](https://developer.apple.com/documentation/security/keychain_services).
+- It's technically impossible to read a message contents from a transaction for ANS and it is impossible to include decrypted message into push contents. To decrypt a message, secret key is needed. And only user device holds it.
+- Starting from version 0.4, ANS includes `txn-id` param in the push content with the transaction id. A client app can get the transaction from a blockchain node and decrypt the message on the device, using a locally stored secret key. This is handled by [NotificationServiceExtension](https://developer.apple.com/documentation/usernotifications/unnotificationserviceextension), and a passphrase (secret key) is stored securely in a [Keychain](https://developer.apple.com/documentation/security/keychain_services).
 - Your device token is unique for each application on your device. We can't find your facebook page with your device token, generated for the ADAMANT app.
-- New device token generated each time you reinstall an app, or just reenable notifications. You can just disable notifications for ADAMANT app, and the device token in ANS database becomes useless. Next time ANS will try to send a push notification, Apple will tell us that the token is broken.
+- New device token is generated each time you reinstall an app, or just re-enable notifications. You can just disable notifications for ADAMANT app, and the device token in ANS database becomes useless. Next time ANS will try to send a push notification, Apple will say the token is broken.
 
 ### iOS App Badge?
-In iOS, app's badge number is sent to you by a server as a part of a push notification, it's not handled by an application, as application can be even terminated and unloaded from memory at the moment. ANS doesn't know how many messages you haven't read. Alternative solution - handle it locally on a device by the NotificationServiceExtension - an app extension, that can modify notification content.
+
+In iOS, app's badge number is sent to you by a server as a part of a push notification, it's not handled by an application, as application can be even terminated and unloaded from memory at the moment. ANS doesn't know how many messages you haven't read. That's why ANS shows `1` badge, if there any unread messages. Alternative solution is to handle it locally on a device by the NotificationServiceExtension—an app extension, that can modify notification content.
 
 ## Installation
-### .NET Core version alert!
-APNs requires HTTP/2 connection. dotnet core 2.1 and 2.2 **does not support it**. Version 2.0 supports it *on some operation systems*. HTTP/2 planned in .NET Core 3.0. The newest version at the moment is 3.0.100-preview5-011568, and it supports HTTP/2, so go for the preview releases. You can create a self-conteined build for a machine without 3.0 runtime on a machine with 3.0 SDK.
+
+### .NET Core version
+
+APNS requires HTTP/2 connection. dotnet core 2.1 and 2.2 **does not support it**.
+The app is build with is 3.0.100-preview5-011568, and it supports HTTP/2. You can create a self-contained build for a machine without 3.0 runtime on a machine with 3.0 SDK.
 `dotnet publish -c Release -r linux-64 -o {output path} -f netcoreapp3.0`
 
-[more](https://docs.microsoft.com/ru-ru/dotnet/core/rid-catalog) about -r, [more](https://docs.microsoft.com/ru-ru/dotnet/standard/frameworks) about -f, [download](https://dotnet.microsoft.com/download/dotnet-core/3.0) dotnet core 3.0 SDK.
+[more](https://docs.microsoft.com/ru-ru/dotnet/core/rid-catalog) about -r, [more](https://docs.microsoft.com/ru-ru/dotnet/standard/frameworks) about -f, [download](https://dotnet.microsoft.com/download) dotnet core SDK.
 
-Want to try it out?
+### Want to try it out?
+
 1. You gonna need a dotnet.core runtime to launch ANS. Go to [Microsoft.com](https://www.microsoft.com/net/learn/get-started) and download SDK for your platform.
-2. Clone or download this repository.
-3. Open terminal/console/cmd and type `dotnet restore` in solution's folder, or just open solution in [Visual Studio](https://www.visualstudio.com) (there is one for macOS now). VS will automatically restore NuGet dependencies.
-4. Grab sample config file at solution's root, edit your connection strings, nodes, delays, certificates, and save it at {UserHomeDirectory}/.ans/config.json.
+2. Clone or download this repository
+3. Open terminal/console/cmd and type `dotnet restore` in the Solution's folder, or just open the Solution in [Visual Studio](https://www.visualstudio.com). VS will automatically restore NuGet dependencies.
+4. Grab sample config file at Solution's root, edit your connection strings, nodes, delays, certificates, and save it to {UserHomeDirectory}/.ans/config.json. See [Configuration](#configuration).
 5. At first launch, applications will auto-upgrade your database.
 6. To launch **ANSPollingWorker**, you need your Apple Push certificate, you can grab it from Apple Developer's center. Place it in {UserHomeDirectory}/.ans/, make sure you specified correct path and certificate's password in config. Go to terminal, `cd ANSPollingWorker`, `dotnet run`.
 7. To launch **ANSRegistrationService**, type in your ANS account in config. Go to terminal, `cd ANSRegistrationService`, `dotnet run`.
