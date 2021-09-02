@@ -37,19 +37,22 @@ Payload format:
     "provider": "apns",
     "action": "add"
 }
+```
 
 - `token`: user's device token
 - `provider`: push service provider
-    - apns: for release builds
-    - apns-sandbox: for debug builds (not yet supported)
+  - apns: for release builds
+  - apns-sandbox: for debug builds (not yet supported)
 - `action` (optional): signal action
-    - add (default): register new devise
-    - remove: unregister device
+  - add (default): register new devise
+  - remove: unregister device
 
 **ANSPollingWorker** — console application that polls ADAMANT nodes for new transactions and checks for registered devices of receivers. If there is a registered device for the recipient of the transaction — sends a notification.
 
 ## QA
+
 ### Device token? What about security?
+
 You can read about Apple Push Notification service (APNs) and security [here](https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/APNSOverview.html) and google more about it.
 
 In short:
