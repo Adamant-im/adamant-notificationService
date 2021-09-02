@@ -73,6 +73,7 @@ In iOS, app's badge number is sent to you by a server as a part of a push notifi
 
 APNS requires HTTP/2 connection. dotnet core 2.1 and 2.2 **does not support it**.
 The app is build with is 3.0.100-preview5-011568, and it supports HTTP/2. You can create a self-contained build for a machine without 3.0 runtime on a machine with 3.0 SDK.
+
 `dotnet publish -c Release -r linux-64 -o {output path} -f netcoreapp3.0`
 
 [more](https://docs.microsoft.com/ru-ru/dotnet/core/rid-catalog) about -r, [more](https://docs.microsoft.com/ru-ru/dotnet/standard/frameworks) about -f, [download](https://dotnet.microsoft.com/download) dotnet core SDK.
@@ -82,29 +83,34 @@ The app is build with is 3.0.100-preview5-011568, and it supports HTTP/2. You ca
 1. You gonna need a dotnet.core runtime to launch ANS. Go to [Microsoft.com](https://www.microsoft.com/net/learn/get-started) and download SDK for your platform.
 2. Clone or download this repository
 3. Open terminal/console/cmd and type `dotnet restore` in the Solution's folder, or just open the Solution in [Visual Studio](https://www.visualstudio.com). VS will automatically restore NuGet dependencies.
-4. Grab sample config file at Solution's root, edit your connection strings, nodes, delays, certificates, and save it to {UserHomeDirectory}/.ans/config.json. See [Configuration](#configuration).
-5. At first launch, applications will auto-upgrade your database.
-6. To launch **ANSPollingWorker**, you need your Apple Push certificate, you can grab it from Apple Developer's center. Place it in {UserHomeDirectory}/.ans/, make sure you specified correct path and certificate's password in config. Go to terminal, `cd ANSPollingWorker`, `dotnet run`.
-7. To launch **ANSRegistrationService**, type in your ANS account in config. Go to terminal, `cd ANSRegistrationService`, `dotnet run`.
+4. Grab sample config file at Solution's root, edit your connection strings, nodes, delays, certificates, and save it to `{UserHomeDirectory}/.ans/config.json`. See [Configuration](#configuration).
+5. At first launch, the application will auto-upgrade your database.
+6. To launch **ANSPollingWorker**, you need your Apple Push certificate, you can grab it from Apple Developer's center. Place it in `{UserHomeDirectory}/.ans/`, make sure you've specified correct path and certificate's password in the config. Go to terminal, `cd ANSPollingWorker`, `dotnet run`.
+7. To launch **ANSRegistrationService**, type in your ANS account in the config. Go to terminal, `cd ANSRegistrationService`, `dotnet run`.
 8. You can run `dotnet publish -c Release` to create compiled archives. More about dotnet core, and what to do with this 'compiled archives' you can read on [Microsoft.com](https://docs.microsoft.com/ru-ru/dotnet/core/tools/dotnet-publish).
 
-*You will need a certificate to send a push notifications to APNs, which you can get from your Apple Developer account.*
+*You will need a certificate to send a push notifications to APNS, which you can get from your Apple Developer account.*
 
 ## My own iOS app and ANS server
-If you are building your own iOS ADAMANT application and want to use your own ANS server, you will need to:
-1. Register ADAMANT account for ANS. Just a regular 'U' account.
-2. In iOS source code, type your ANS account's address and public key in AdamantResources struct.
-3. In ANS config, type in your ANS account's address and private key. See **Configuration** section bellow for more info.
-4. To create pfx certificate with ECDsa private key, first, create a key and download it from your [Apple Developer page](https://developer.apple.com/account/ios/authkey/). Put it in some folder. Open Terminal, navigate to this folder, and type:
-```bash
-$ openssl req -new -x509 -key key.p8 -out selfsigned.cer
-$ openssl pkcs12 -export -in selfsigned.cer -inkey key.p8  -out cert.pfx
-```
-Put pfx certificate in ~/.ans, and update config.
 
-5. Done. iOS application will send device tokens to your ANS account, **ANSRegistrationService** will poll signals for your ANS account and register tokens, and **ANSPollingService** will poll new messages and transactions and notify registered devices.
+If you are building your own iOS ADAMANT application and want to use your own ANS server, you will need to:
+
+1. Register ADAMANT account for ANS. Just a regular 'U' account.
+2. In iOS source code, type your ANS account's address and public key in `AdamantResources` struct.
+3. In ANS config, type in your ANS account's address and private key. See [Configuration](#configuration).
+4. To create .pfx certificate with ECDSA private key. First, create a key and download it from your [Apple Developer page](https://developer.apple.com/account/ios/authkey/). Put it in some folder. Open Terminal, navigate to this folder, and type:
+
+```bash
+openssl req -new -x509 -key key.p8 -out selfsigned.cer
+openssl pkcs12 -export -in selfsigned.cer -inkey key.p8 -out cert.pfx
+```
+
+Put the .pfx certificate in `~/.ans`, and update the config.
+
+5. Done. iOS application will send device tokens to your ANS ADM account, **ANSRegistrationService** will poll signal transactions and register tokens, and **ANSPollingService** will poll new messages/transactions and notify registered devices.
 
 ## Configuration
+
 Sample configuration file is located in Solution root directory. Booth Polling ans Signal registration services loads config from ~/.ans/config.json, so you can have one file for ANS.
 
 #### Sections:
