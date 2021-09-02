@@ -97,7 +97,7 @@ If you are building your own iOS ADAMANT application and want to use your own AN
 
 1. Register ADAMANT account for ANS. Just a regular 'U' account.
 2. In iOS source code, type your ANS account's address and public key in `AdamantResources` struct.
-3. In ANS config, type in your ANS account's address and private key. See [Configuration](#configuration).
+3. In ANS config, type in your ANS's ADM account address and private key. See [Configuration](#configuration).
 4. To create .pfx certificate with ECDSA private key. First, create a key and download it from your [Apple Developer page](https://developer.apple.com/account/ios/authkey/). Put it in some folder. Open Terminal, navigate to this folder, and type:
 
 ```bash
@@ -111,53 +111,51 @@ Put the .pfx certificate in `~/.ans`, and update the config.
 
 ## Configuration
 
-Sample configuration file is located in Solution root directory. Booth Polling ans Signal registration services loads config from ~/.ans/config.json, so you can have one file for ANS.
+Sample configuration file is located in the Solution's root directory. Both Polling ans Signal registration services loads config from `~/.ans/config.json`, so you have one config file for ANS.
 
-#### Sections:
-- Database (optional): Section for database configuration. Params:
-    + ConnectionString (optional, default: devices). ConnectionString name. Strings specified in 'ConnectionStrings' section, see bellow.
-    + Provider (optional): Database connection provider. Two providers supported:
-        * sqlite
-        * mysql (default)
+### Config sections
 
-- ConnectionStrings: standart dotnet section for connection strings. Active connection string name specified in Database:ConnectionString param, default is 'devices'.
+- `Database` (optional): Section for database configuration. Params:
+  - `ConnectionString` (optional, default: `devices`). ConnectionString name. Strings is specified in `ConnectionStrings` section, see bellow.
+  - `Provider` (optional): Database connection provider. Two providers are supported:
+    - `sqlite`
+    - `mysql` (default)
 
-- Api: ADAMANT node settings.
-    + Server[]: node addresses. Properties:
-        * ip (string): node address (or ip)
-        * protocol (string, optional, default: https)
-        * port (int, optional)
+- `ConnectionStrings`: a standard dotnet section for connection strings. Active connection string name specified in `Database:ConnectionString` param, default is `devices`.
 
-- PollingWroker: Polling settings. Properties:
-    + Delay (milliseconds as int, optional, default: 2000): delay between two requests.
-    + NlogConfig (string, optional, default: 'nlog.config'): path to NLog configuration file.
-    + Startup (enum, optional, default: database): Startup mode. Options:
-        * database: Try to load saved last height from database, and begin from this value. If failed or no value saved, go to 'network' mode.
-        * network: Try to get last transaction from network and use it height as last height value. If failed or no transaction received, go to 'initial' mode.
-        * initial: Start from height 0.
+- `Api`: ADAMANT node settings.
+  - `Server[]`: node addresses. Properties:
+    - `ip` (string): node address (or ip)
+    - `protocol` (string, optional, default: `https`)
+    - `port` (int, optional)
 
-- SignalsRegistration: Signals polling & registration settings. Properties:
-    + Delay (milliseconds as int, optional, default: 2000): delay between two requests.
-    + NlogConfig (string, optional, default: 'nlog.config'): path to NLog configuration file.
-    + Address (string, required): ANS account address to poll signals.
-    + PrivateKey (string, required): ANS account private key to decode signals.
-    + Startup (enum, optional, default: database): Startup mode. Options:
-        * database: Try to load saved last height from database, and begin from this value. If failed or no value saved, go to 'network' mode.
-        * network: Try to get last transaction from network and use it height as last height value. If failed or no transaction received, go to 'initial' mode.
-        * initial: Start from height 0.
+- `PollingWorker`: Polling settings. Properties:
+  - `Delay` (milliseconds as int, optional, default: `2000`): interval between two requests to retrieve new messages
+  - `NlogConfig` (string, optional, default: `nlog.config`): path to NLog configuration file
+  - `Startup` (enum, optional, default: `database`): Startup mode. Options:
+    - `database`: Try to load saved last height from database, and start from this value. If failed or no value saved, switch to `network` mode.
+    - `network`: Try to get last transaction from network and use its height as last height value. If failed or no transaction received, go to `initial` mode.
+    - `initial`: Start from height 0.
 
-- ApplePusher: APNS settings. Sections:
-    + Keys. Properties:
-        * keyId (string): Your delevoper key id. Created and obtained at your [Auth Keys page](https://developer.apple.com/account/ios/authkey/).
-        * teamId (string): Your app developer team id. Obtained at your Apple Dev [Membership Details](developer.apple.com/account/#/membership/).
-        * bundleAppId (string): Your application bundle id.
-        * pfxPath (string): Path to self-signed *.pfx certificate. Certificate must contain ECDsa private key.
-        * pfxPassword (string): Certificate's password.
-    + Payload[]. Apple push notifications payload. Properties:
-        * transactionType:
-            * 0: transfer
-            * 8: chat message
-        * title
-        * body
-        * sound
+- `SignalsRegistration`: Signals polling & registration settings. Properties:
+  - `Delay` (milliseconds as int, optional, default: 2000): interval between two requests to retrieve new signal transactions
+  - `NlogConfig` (string, optional, default: `nlog.config`): path to NLog configuration file
+  - `Address` (string, required): ANS ADM account address to poll signals
+  - `PrivateKey` (string, required): ANS ADM account private key to decrypt signal transactions
+  - `Startup` (enum, optional, default: database): Startup mode. Same options as for `PollingWorker:Startup`.
 
+- `ApplePusher`: APNS settings. Sections:
+  - `Keys`. Properties:
+    - `keyId` (string): Your developer key id. Created and obtained at your [Auth Keys page](https://developer.apple.com/account/ios/authkey/).
+    - `teamId` (string): Your app developer team id. Obtained at your Apple Dev [Membership Details](developer.apple.com/account/#/membership/).
+    - `bundleAppId` (string): Your application bundle id
+    - `pfxPath` (string): Path to self-signed *.pfx certificate. Certificate must contain ECDSA private key
+    - `pfxPassword` (string): Certificate's password
+  - `Certificate`. Properties:
+    - `path` (string): Path to APNS *.p12 certificate
+    - `pass` (string): Certificate's password
+  - `Payload[]`. Apple push notifications payload. Properties:
+    - `transactionType`: `0` for ADM token transfer, `8` for chat transactions and coin transfers
+    - `title`
+    - `body`
+    - `sound`
