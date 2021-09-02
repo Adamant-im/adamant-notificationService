@@ -1,32 +1,52 @@
 # ADAMANT Notification Service (ANS)
-The first of [ADAMANT Services](https://medium.com/adamant-im/adamant-is-working-on-blockchain-messaging-platform-and-push-notifications-service-765972cce50e), implemented to make secure instant notifications for ADAMANT applications.
+
+The first of [ADAMANT Services](https://medium.com/adamant-im/adamant-is-working-on-blockchain-messaging-platform-and-push-notifications-service-765972cce50e), implemented to make secure instant notifications for ADAMANT iOS application.
 
 Note: ADAMANT Blockchain and Messenger apps are fully functional without ANS and other Services. The goal of ADAMANT Services and ANS is to provide features that can not be implemented on the Blockchain. More on [adamant.im](https://adamant.im).
 
-## Application
-There are two main parts:
+## How it works
 
-**ANSPollingWorker** — console application that polls ADAMANT nodes for new transactions and checks for registered devices of receivers. If there is a registered device for the recipient of the transaction — sends a notification.
+To deliver notification privately and secure, 4 parties are involved:
 
-**ANSSignalsRegistration** — console application that polls ADAMANT nodes for new service signals (transaction with chat asset, ChatType = 3, see [AIP-6: Signal Messages](https://aips.adamant.im/AIPS/aip-6)) for device tokens. Message payload must be serialized in JSON and encrypted as other chat transactions.
+1. User's device (i. e., iPhone)
+2. ADAMANT's blockchain
+3. Apple Push Notification Service (APNS)
+4. This application, ADAMANT Notification Service (ANS)
+
+A workflow runs as:
+
+- User sends an encrypted signal message with a unique token to an ADAMANT blockchain node. Recipient is ANS's ADAMANT address. See [AIP-6: Signal Messages](https://aips.adamant.im/AIPS/aip-6).
+- ANS polls the blockchain and decrypts the user's token
+- ANS polls the blockchain and filter transactions, where user's ADM address is the recipient. ANS asks APNS to deliver these transactions (they holds encrypted messages) to a user's device, specified by unique token.
+- APNS notifies a user's device
+- User's device has a secret key and decrypts messages
+
+This way a user's device never communicate with ANS, and ANS don't know its IP or other identities. They communicate through a blockchain nodes.
+
+## ANS application
+
+This application, ANS, consists of two main parts:
+
+**ANSSignalsRegistration** — console application that polls ADAMANT blockchain nodes for new service signals to get device tokens. Message payload must be serialized in JSON and encrypted as other chat transactions.
 
 Payload format:
+
 ```json
 {
     "token": "DeviceToken",
     "provider": "apns",
     "action": "add"
 }
-```
-- token: Your device token
-- provider: Your push provider.
-    + apns: Release builds
-    + apns-sandbox: Debug builds. (not yet supported).
-- action (optional): Signal action
-    + add (default): register new devise
-    + remove: unregister device
 
-*'apns' stands for Apple Push Notification service*.
+- `token`: user's device token
+- `provider`: push service provider
+    - apns: for release builds
+    - apns-sandbox: for debug builds (not yet supported)
+- `action` (optional): signal action
+    - add (default): register new devise
+    - remove: unregister device
+
+**ANSPollingWorker** — console application that polls ADAMANT nodes for new transactions and checks for registered devices of receivers. If there is a registered device for the recipient of the transaction — sends a notification.
 
 ## QA
 ### Device token? What about security?
