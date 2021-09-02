@@ -6,7 +6,7 @@ Note: ADAMANT Blockchain and Messenger apps are fully functional without ANS and
 
 ## How it works
 
-To deliver notification privately and secure, 4 parties are involved:
+To deliver notification **privately and secure**, 4 parties are involved:
 
 1. User's device (i. e., iPhone)
 2. ADAMANT's blockchain
@@ -47,7 +47,7 @@ Payload format:
   - add (default): register new devise
   - remove: unregister device
 
-**ANSPollingWorker** — console application that polls ADAMANT nodes for new transactions and checks for registered devices of receivers. If there is a registered device for the recipient of the transaction — sends a notification.
+**ANSPollingWorker** — console application that polls ADAMANT nodes for new transactions and checks for registered devices of receivers. If there is a registered device for the recipient of the transaction—sends a notification.
 
 ## QA
 
@@ -133,16 +133,16 @@ Sample configuration file is located in the Solution's root directory. Both Poll
   - `Delay` (milliseconds as int, optional, default: `2000`): interval between two requests to retrieve new messages
   - `NlogConfig` (string, optional, default: `nlog.config`): path to NLog configuration file
   - `Startup` (enum, optional, default: `database`): Startup mode. Options:
-    - `database`: Try to load saved last height from database, and start from this value. If failed or no value saved, switch to `network` mode.
+    - `database`: Try to load saved last blockchain height from database, and start from this value. If failed or no value saved, switch to `network` mode.
     - `network`: Try to get last transaction from network and use its height as last height value. If failed or no transaction received, go to `initial` mode.
-    - `initial`: Start from height 0.
+    - `initial`: Start from blockchain height 0.
 
 - `SignalsRegistration`: Signals polling & registration settings. Properties:
   - `Delay` (milliseconds as int, optional, default: 2000): interval between two requests to retrieve new signal transactions
   - `NlogConfig` (string, optional, default: `nlog.config`): path to NLog configuration file
-  - `Address` (string, required): ANS ADM account address to poll signals
-  - `PrivateKey` (string, required): ANS ADM account private key to decrypt signal transactions
-  - `Startup` (enum, optional, default: database): Startup mode. Same options as for `PollingWorker:Startup`.
+  - `Address` (string, required): ANS's ADM account address to poll signals
+  - `PrivateKey` (string, required): ANS's ADM account private key to decrypt signal transactions
+  - `Startup` (enum, optional, default: `database`): Startup mode. Same options as for `PollingWorker:Startup`.
 
 - `ApplePusher`: APNS settings. Sections:
   - `Keys`. Properties:
