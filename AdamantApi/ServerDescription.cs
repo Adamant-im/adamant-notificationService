@@ -24,7 +24,8 @@ namespace Adamant.Api
 
 		public bool Equals(ServerDescription other)
 		{
-			return Ip == other.Ip &&
+			return other != null &&
+		           Ip == other.Ip &&
 		           Protocol == other.Protocol &&
 		           Port == other.Port;
 		}

@@ -120,7 +120,8 @@ namespace Adamant.NotificationService.ApplePusher
 
 		void Pusher_OnNotificationSuccess(object sender, NotificationSuccessEventArgs<ApnsNotification> args)
 		{
-			_logger.LogDebug("Notification success, token: {0}", args.Token);
+			// Never log the device token itself — see AGENTS.md's privacy rules.
+			_logger.LogDebug("Notification success");
 		}
 
 		void Pusher_OnNotificationFailed(object sender, NotificationFailedEventArgs<ApnsNotification, ApnsResult> args)

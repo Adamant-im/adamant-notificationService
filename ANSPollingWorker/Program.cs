@@ -48,9 +48,6 @@ namespace Adamant.NotificationService.PollingWorker
 			_context = new ANSContext(connectionString, provider);
 			_context.Database.Migrate();
 
-			// API
-			var api = new AdamantApi(configuration);
-
 			#endregion
 
 			#region DI & NLog
@@ -77,15 +74,13 @@ namespace Adamant.NotificationService.PollingWorker
 			services.AddSingleton<TransferPollingWorker>();
 
 			// Other
-			services.AddSingleton<ILoggerFactory, LoggerFactory>();
-			services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
-			services.AddLogging(b => b.SetMinimumLevel(LogLevel.Trace));
+			services.AddLogging(builder =>
+			{
+				builder.SetMinimumLevel(LogLevel.Trace);
+				builder.AddNLog(new NLogProviderOptions { CaptureMessageTemplates = true, CaptureMessageProperties = true });
+			});
 
 			var serviceProvider = services.BuildServiceProvider();
-
-			var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
-
-			loggerFactory.AddNLog(new NLogProviderOptions { CaptureMessageTemplates = true, CaptureMessageProperties = true });
 
 			#endregion
 
@@ -105,7 +100,25 @@ namespace Adamant.NotificationService.PollingWorker
 			transferWorker.Delay = TimeSpan.FromMilliseconds(delay);
 			transferWorker.StartPolling(startupMode);
 
+			// Docker/systemd stop the container with SIGTERM before killing it; the .NET runtime
+			// turns that into ProcessExit. Without observing it, the workers get killed mid-cycle
+			// and the container always reports a non-zero exit, even on an intentional stop.
+			AppDomain.CurrentDomain.ProcessExit += (s, e) => StopWorkers(chatWorker, transferWorker);
+			Console.CancelKeyPress += (s, e) =>
+			{
+				e.Cancel = true;
+				StopWorkers(chatWorker, transferWorker);
+			};
+
 			Task.WaitAll(chatWorker.PollingTask, transferWorker.PollingTask);
+		}
+
+		static void StopWorkers(ChatPollingWorker chatWorker, TransferPollingWorker transferWorker)
+		{
+			_logger.Info("Shutdown requested, stopping workers...");
+			chatWorker.StopPolling();
+			transferWorker.StopPolling();
+			Task.WaitAll(new[] { chatWorker.PollingTask, transferWorker.PollingTask }, TimeSpan.FromSeconds(10));
 		}
 
 		// Log all unhandled exceptions

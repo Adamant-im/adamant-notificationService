@@ -1,0 +1,25 @@
+# This is the top-most EditorConfig file
+root = true
+
+# All files
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.cs]
+indent_style = tab
+indent_size = 4
+
+# Existing code uses Allman braces; keep new code consistent with it.
+csharp_new_line_before_open_brace = all
+csharp_prefer_braces = true:suggestion
+
+[*.{json,yml,yaml}]
+indent_style = space
+indent_size = 2
+
+[*.{csproj,sln}]
+indent_style = space
+indent_size = 2

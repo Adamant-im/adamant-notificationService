@@ -87,20 +87,20 @@ namespace Adamant.NotificationService
 			switch (startupMode)
 			{
 				case StartupMode.database:
-					Logger.LogInformation("Getting stored height from databse...");
+					Logger.LogInformation("Getting stored height from database...");
 					LastHeight = GetStoredLastHeight();
 
 					if (LastHeight == 0)
 					{
 						Logger.LogInformation("No stored height, warming up from network.");
-						LastHeight = await GetNetworkCurrentLastHeight();
+						LastHeight = await GetNetworkCurrentLastHeightSafe();
 					}
 
 					break;
-					
+
 				case StartupMode.network:
 					Logger.LogInformation("Warming up, getting current top height.");
-					LastHeight = await GetNetworkCurrentLastHeight();
+					LastHeight = await GetNetworkCurrentLastHeightSafe();
 					break;
 
 				case StartupMode.initial:
@@ -113,7 +113,18 @@ namespace Adamant.NotificationService
 			{
 				Logger.LogDebug("Updating from height: {0}", LastHeight);
 
-				var transactions = await GetTransactions(LastHeight);
+				List<T> transactions = null;
+				try
+				{
+					transactions = await GetTransactions(LastHeight);
+				}
+				catch (Exception ex)
+				{
+					// AdamantApi already retries across every configured node; if all of them
+					// failed, skip this cycle instead of letting the exception fault the polling
+					// Task, which would bring the whole process down (see Task.WaitAll in Main).
+					Logger.LogError(ex, "Failed to fetch transactions from any configured node, will retry next cycle");
+				}
 
 				if (transactions != null && transactions.Count > 0)
 				{
@@ -127,6 +138,23 @@ namespace Adamant.NotificationService
 					Logger.LogDebug("Got 0, delay.");
 
 				await Task.Delay(Delay);
+			}
+		}
+
+		/// <summary>
+		/// Same as <see cref="GetNetworkCurrentLastHeight"/>, but swallows request failures so a
+		/// down node at startup can't prevent the worker from starting at all.
+		/// </summary>
+		private async Task<int> GetNetworkCurrentLastHeightSafe()
+		{
+			try
+			{
+				return await GetNetworkCurrentLastHeight();
+			}
+			catch (Exception ex)
+			{
+				Logger.LogError(ex, "Failed to get current network height at startup, starting from 0");
+				return 0;
 			}
 		}
 

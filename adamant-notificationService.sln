@@ -1,4 +1,4 @@
-
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ANSPollingWorker", "ANSPollingWorker\ANSPollingWorker.csproj", "{AAC036DE-835F-40D4-A252-3FE32D224F68}"
@@ -36,6 +36,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpPusher", "SharpPusher\SharpPusher.csproj", "{E8508322-AA63-4BEE-A6B1-F5B27FB226BE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpPusherSample", "SharpPusherSample\SharpPusherSample.csproj", "{569D8850-4F64-4858-AAB9-6ECECF0F2644}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdamantApi.Tests", "AdamantApi.Tests\AdamantApi.Tests.csproj", "{E6D32D25-DC17-423A-B09E-3657CA4CA1A4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ANSDataContext.Tests", "ANSDataContext.Tests\ANSDataContext.Tests.csproj", "{5ACDAD6F-5E73-404E-9206-792B696729E3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -103,6 +107,14 @@ Global
 		{569D8850-4F64-4858-AAB9-6ECECF0F2644}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{569D8850-4F64-4858-AAB9-6ECECF0F2644}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{569D8850-4F64-4858-AAB9-6ECECF0F2644}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E6D32D25-DC17-423A-B09E-3657CA4CA1A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6D32D25-DC17-423A-B09E-3657CA4CA1A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6D32D25-DC17-423A-B09E-3657CA4CA1A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6D32D25-DC17-423A-B09E-3657CA4CA1A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5ACDAD6F-5E73-404E-9206-792B696729E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5ACDAD6F-5E73-404E-9206-792B696729E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5ACDAD6F-5E73-404E-9206-792B696729E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5ACDAD6F-5E73-404E-9206-792B696729E3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{C8B1A3CD-9BA7-49DF-91FA-2A150EA92FE8} = {CBAAEC9A-47E4-479C-BB79-F2B8962561FB}
