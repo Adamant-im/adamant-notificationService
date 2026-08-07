@@ -1,13 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
-    <ReleaseVersion>0.4.1</ReleaseVersion>
+    <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>Adamant.NotificationService.ApplePusher</RootNamespace>
   </PropertyGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\ANSCore\ANSCore.csproj" />
       <ProjectReference Include="..\SharpPusher\SharpPusher.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+      <!-- Microsoft.Extensions.Configuration.Abstractions used to ship as part of the netcoreapp3.0
+           shared framework, so this compiled without an explicit reference. net8.0 needs it declared. -->
+      <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.1" />
     </ItemGroup>
 </Project>

@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading.Tasks;
 using Adamant.Api.Responses;
 using Adamant.Models;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace Adamant.Api
@@ -24,37 +27,62 @@ namespace Adamant.Api
 		private static string getTransactions = "api/transactions";
 		private static string getChatTransactions = "api/chats/get";
 
-		private static Random rnd = new Random();
+		// Random.Shared rather than a shared "new Random()": AdamantApi is registered as a
+		// singleton and both the chat and the transfer poller call SelectNextEndpoint concurrently.
+		// Random instances are not thread-safe, and concurrent Next() calls can corrupt the internal
+		// state so it degenerates to returning 0 forever — which would silently pin failover to one node.
+		private static Random Rnd => Random.Shared;
+
+		private readonly ILogger<AdamantApi> _logger;
+
+		// Shared across the process lifetime: HttpClient is designed to be reused, and creating
+		// one per request (as this used to do) leaks a socket into CLOSE-WAIT on every call, since
+		// the underlying connection isn't released until the client itself is disposed/collected.
+		private static readonly HttpClient httpClient = CreateHttpClient();
 
 		#endregion
 
 		#region ctor
 
-		public AdamantApi(IConfiguration configuration)
+		public AdamantApi(IConfiguration configuration, ILogger<AdamantApi> logger)
 		{
 			Configuration = configuration;
+			_logger = logger;
 			var endpointsRaw = configuration.GetSection("Api").GetSection("Server").GetChildren();
+			var endpoints = new List<ServerDescription>();
 
-			if (endpointsRaw != null)
+			foreach (var raw in endpointsRaw)
 			{
-				var endpoints = new List<ServerDescription>();
+				int? port = null;
+				if (int.TryParse(raw["port"], out var p))
+					port = p;
 
-				foreach (var raw in endpointsRaw)
-				{
-					int? port = null;
-					if (int.TryParse(raw["port"], out var p))
-						port = p;
-
-				   endpoints.Add(new ServerDescription(raw["ip"], raw["protocol"], port));
-				}
-
-				ServersList = endpoints;
+				endpoints.Add(new ServerDescription(raw["ip"], raw["protocol"], port));
 			}
 
-			if (Servers == null)
+			ServersList = endpoints;
+
+			// GetChildren() never returns null, only an empty sequence, so this is the only
+			// reliable place to catch a missing/empty Api:Server config section — otherwise
+			// CurrentServer silently stays null and the first request throws deep inside BuildEndpoint.
+			if (ServersList.Count == 0)
 				throw new Exception("Can't get endpoint addresses from config");
 
 			SelectNextEndpoint();
+		}
+
+		private static HttpClient CreateHttpClient()
+		{
+			var client = new HttpClient
+			{
+				// HttpClient defaults to 100 seconds. A node that accepts the connection and then
+				// stalls would hold a poller for 100s per attempt, so a single wedged node could
+				// block a cycle for minutes across the configured list — far longer than the poll
+				// interval, and indistinguishable from a stopped service. Fail over quickly instead.
+				Timeout = TimeSpan.FromSeconds(20)
+			};
+			client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+			return client;
 		}
 
 		#endregion
@@ -79,10 +107,8 @@ namespace Adamant.Api
 
 			if (limit.HasValue)
 				query.Add("limit", limit.Value.ToString());
-			
-			var endpoint = BuildEndpoint(CurrentServer, getTransactions, query);
 
-			var results = await GetResponse<TransactionsResponse>(endpoint);
+			var results = await GetResponse<TransactionsResponse>(getTransactions, query);
 			return results.Transactions;
 		}
 
@@ -105,9 +131,7 @@ namespace Adamant.Api
 			if (offset > 0)
 				query.Add("offset", offset.ToString());
 
-			var endpoint = BuildEndpoint(CurrentServer, getChatTransactions, query);
-
-			var results = await GetResponse<TransactionsResponse>(endpoint);
+			var results = await GetResponse<TransactionsResponse>(getChatTransactions, query);
 			return results.Transactions;
 		}
 
@@ -115,12 +139,30 @@ namespace Adamant.Api
 
 		#region Internal logic
 
+		/// <summary>
+		/// Selects a different server than <see cref="CurrentServer"/> when more than one is
+		/// configured, so a retry after a failed request always targets a fresh node instead of
+		/// re-rolling the one that just failed.
+		/// </summary>
 		public void SelectNextEndpoint()
 		{
-			if (ServersList == null)
+			if (ServersList == null || ServersList.Count == 0)
 				return;
 
-			CurrentServer = ServersList[rnd.Next(ServersList.Count)];
+			if (ServersList.Count == 1)
+			{
+				CurrentServer = ServersList[0];
+				return;
+			}
+
+			// Filter first instead of a do/while random-reroll: if Api:Server has duplicate entries
+			// and every one of them equals CurrentServer, there is no "different" server to find,
+			// and a reroll loop would hang the process instead of just failing over. This is also
+			// strictly correct rather than merely bounded — it never wastes a draw re-picking the
+			// server that just failed.
+			var others = ServersList.Where(s => !s.Equals(CurrentServer)).ToList();
+			if (others.Count > 0)
+				CurrentServer = others[Rnd.Next(others.Count)];
 		}
 
 		public static string BuildEndpoint(ServerDescription server, string function, Dictionary<string, string> query)
@@ -134,7 +176,7 @@ namespace Adamant.Api
 				var enumerator = query.GetEnumerator();
 				if (enumerator.MoveNext())
 					builder.AppendFormat("?{0}={1}", enumerator.Current.Key, enumerator.Current.Value);
-				
+
 				while (enumerator.MoveNext())
 					builder.AppendFormat("&{0}={1}", enumerator.Current.Key, enumerator.Current.Value);
 			}
@@ -142,43 +184,42 @@ namespace Adamant.Api
 			return builder.ToString();
 		}
 
-		private string BuildEndpointt(string url, int? type, int offset, int height)
+		/// <summary>
+		/// Requests <paramref name="function"/> from the current node and deserializes the result.
+		/// On a transport or malformed-response failure, retries against a different configured
+		/// node (up to once per configured node) instead of failing the whole polling loop — a
+		/// single bad or unreachable node must not be able to take the process down.
+		/// </summary>
+		private async Task<T> GetResponse<T>(string function, Dictionary<string, string> query)
 		{
-			var builder = new StringBuilder(url);
-			builder.Append("?orderBy=timestamp:desc");
+			if (string.IsNullOrEmpty(function))
+				throw new ArgumentException(nameof(function));
 
-			if (type.HasValue)
-				builder.AppendFormat("&type={0}", type.Value);
+			var attempts = Math.Max(ServersList?.Count ?? 1, 1);
+			Exception lastError = null;
 
-			if (offset > 0)
-				builder.AppendFormat("&offset={0}", offset);
-
-			if (height > 0)
-				builder.AppendFormat("&fromHeight={0}", height);
-
-			return builder.ToString();
-		}
-
-		private async Task<T> GetResponse<T>(string endpoint)
-		{
-			if (string.IsNullOrEmpty(endpoint))
+			for (var attempt = 1; attempt <= attempts; attempt++)
 			{
-				throw new ArgumentException("endpoint");
+				var endpoint = BuildEndpoint(CurrentServer, function, query);
+
+				try
+				{
+					var raw = await httpClient.GetStringAsync(endpoint);
+					return JsonConvert.DeserializeObject<T>(raw);
+				}
+				catch (Exception ex) when (ex is HttpRequestException || ex is TaskCanceledException || ex is JsonException)
+				{
+					lastError = ex;
+					_logger?.LogWarning(ex, "Request to {Endpoint} failed (attempt {Attempt}/{Attempts})", endpoint, attempt, attempts);
+
+					if (attempt < attempts)
+						SelectNextEndpoint();
+				}
 			}
 
-			try
-			{
-				var client = new HttpClient();
-				client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-				var raw = await client.GetStringAsync(endpoint);
-				return JsonConvert.DeserializeObject<T>(raw);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine(ex);
-				throw ex;
-			}
+			_logger?.LogError(lastError, "All {Attempts} configured node(s) failed to respond", attempts);
+			ExceptionDispatchInfo.Capture(lastError).Throw();
+			throw lastError; // Unreachable — Throw() above always throws; this only satisfies the compiler's return-path analysis.
 		}
 
 		#endregion

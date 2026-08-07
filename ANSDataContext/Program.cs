@@ -11,7 +11,7 @@ namespace Adamant.NotificationService.DataContext
 			var connectionString = "";
 
 			var optionsBuilder = new DbContextOptionsBuilder<ANSContext>();
-			optionsBuilder.UseMySQL(connectionString);
+			optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
 
 			var context = new ANSContext(optionsBuilder.Options);
 			context.Database.Migrate();

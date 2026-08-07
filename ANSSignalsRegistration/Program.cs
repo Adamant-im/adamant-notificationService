@@ -46,9 +46,6 @@ namespace Adamant.NotificationService.SignalsRegistration
 			var context = new ANSContext(connectionString, provider);
 			context.Database.Migrate();
 
-			// API
-			var api = new AdamantApi(configuration);
-
 			#endregion
 
 			#region DI & NLog
@@ -61,6 +58,7 @@ namespace Adamant.NotificationService.SignalsRegistration
 				nLogConfig = Utilities.HandleUnixHomeDirectory(nLogConfig);
 
 			_logger = NLog.LogManager.LoadConfiguration(nLogConfig).GetCurrentClassLogger();
+			_logger.Info("ANS Signals Registration version {0}", AppVersion.Current);
 
 			var services = new ServiceCollection();
 
@@ -73,15 +71,13 @@ namespace Adamant.NotificationService.SignalsRegistration
 			services.AddSingleton<SignalsPoller>();
 
 			// Other
-			services.AddSingleton<ILoggerFactory, LoggerFactory>();
-			services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
-			services.AddLogging(b => b.SetMinimumLevel(LogLevel.Trace));
+			services.AddLogging(builder =>
+			{
+				builder.SetMinimumLevel(LogLevel.Trace);
+				builder.AddNLog(new NLogProviderOptions { CaptureMessageTemplates = true, CaptureMessageProperties = true });
+			});
 
 			var serviceProvider = services.BuildServiceProvider();
-
-			var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
-
-			loggerFactory.AddNLog(new NLogProviderOptions { CaptureMessageTemplates = true, CaptureMessageProperties = true });
 
 			#endregion
 
@@ -103,6 +99,16 @@ namespace Adamant.NotificationService.SignalsRegistration
 			worker.PrivateKey = privateKey;
 			worker.StartPolling(startupMode);
 
+			// Docker/systemd stop the container with SIGTERM before killing it; the .NET runtime
+			// turns that into ProcessExit. Without observing it, the worker gets killed mid-cycle
+			// and the container always reports a non-zero exit, even on an intentional stop.
+			AppDomain.CurrentDomain.ProcessExit += (s, e) => StopWorker(worker);
+			Console.CancelKeyPress += (s, e) =>
+			{
+				e.Cancel = true;
+				StopWorker(worker);
+			};
+
 			if (worker.PollingTask != null)
 			{
 				await worker.PollingTask;
@@ -111,6 +117,13 @@ namespace Adamant.NotificationService.SignalsRegistration
 			{
 				throw new Exception("Can't await worker");
 			}
+		}
+
+		static void StopWorker(SignalsPoller worker)
+		{
+			_logger.Info("Shutdown requested, stopping worker...");
+			worker.StopPolling();
+			worker.PollingTask?.Wait(TimeSpan.FromSeconds(10));
 		}
 
 		// Log all unhandled exceptions

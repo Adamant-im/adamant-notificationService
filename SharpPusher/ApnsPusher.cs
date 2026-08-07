@@ -76,7 +76,8 @@ namespace SharpPusher
             }
             catch (Exception e)
             {
-                _logger.LogCritical(e, $"Failed to load certeficate at {certificatePath} with password {certificatePassword}\n");
+                // Never log the certificate password itself — it's a credential, not diagnostic data.
+                _logger.LogCritical(e, "Failed to load certificate at {CertificatePath}", certificatePath);
                 throw;
             }
 

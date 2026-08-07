@@ -29,8 +29,8 @@ namespace SharpPusherSample
 			var deviceToken = "";
 
             NLog.LogManager.LoadConfiguration("NLog.config");
-            var loggerFactory = new LoggerFactory();
-            loggerFactory.AddNLog(new NLogProviderOptions { CaptureMessageTemplates = true, CaptureMessageProperties = true });
+            using var loggerFactory = LoggerFactory.Create(builder =>
+                builder.AddNLog(new NLogProviderOptions { CaptureMessageTemplates = true, CaptureMessageProperties = true }));
             var logger = loggerFactory.CreateLogger<ApnsPusher>();
 
             var pusher = new ApnsPusher(logger, keyId, teamId, bundleAppId, keyPath, keyPassword, ApnsEnvironment.Production);

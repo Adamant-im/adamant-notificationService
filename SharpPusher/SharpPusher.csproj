@@ -1,18 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
         <PackageId>SharpPusher</PackageId>
         <Version>0.1.1</Version>
         <Authors>RealBonus</Authors>
         <RepositoryUrl>https://github.com/RealBonus/SharpPusher</RepositoryUrl>
         <PackageTags>push;apns;core</PackageTags>
-        <ReleaseVersion>0.4.1</ReleaseVersion>
         <PackageProjectUrl>https://github.com/RealBonus/SharpPusher</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="jose-jwt" Version="2.4.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
+    <PackageReference Include="jose-jwt" Version="5.3.0" />
+    <!-- jose-jwt 4+ switched its own internal (de)serialization to System.Text.Json and dropped
+         the transitive Newtonsoft.Json dependency this project's own JsonProperty attributes rely
+         on, so it now needs to be referenced directly. -->
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.1" />
   </ItemGroup>
 </Project>

@@ -87,20 +87,20 @@ namespace Adamant.NotificationService
 			switch (startupMode)
 			{
 				case StartupMode.database:
-					Logger.LogInformation("Getting stored height from databse...");
+					Logger.LogInformation("Getting stored height from database...");
 					LastHeight = GetStoredLastHeight();
 
 					if (LastHeight == 0)
 					{
 						Logger.LogInformation("No stored height, warming up from network.");
-						LastHeight = await GetNetworkCurrentLastHeight();
+						LastHeight = await GetNetworkCurrentLastHeightSafe(token);
 					}
 
 					break;
-					
+
 				case StartupMode.network:
 					Logger.LogInformation("Warming up, getting current top height.");
-					LastHeight = await GetNetworkCurrentLastHeight();
+					LastHeight = await GetNetworkCurrentLastHeightSafe(token);
 					break;
 
 				case StartupMode.initial:
@@ -113,7 +113,18 @@ namespace Adamant.NotificationService
 			{
 				Logger.LogDebug("Updating from height: {0}", LastHeight);
 
-				var transactions = await GetTransactions(LastHeight);
+				List<T> transactions = null;
+				try
+				{
+					transactions = await GetTransactions(LastHeight);
+				}
+				catch (Exception ex)
+				{
+					// AdamantApi already retries across every configured node; if all of them
+					// failed, skip this cycle instead of letting the exception fault the polling
+					// Task, which would bring the whole process down (see Task.WaitAll in Main).
+					Logger.LogError(ex, "Failed to fetch transactions from any configured node, will retry next cycle");
+				}
 
 				if (transactions != null && transactions.Count > 0)
 				{
@@ -128,6 +139,49 @@ namespace Adamant.NotificationService
 
 				await Task.Delay(Delay);
 			}
+		}
+
+		/// <summary>
+		/// Same as <see cref="GetNetworkCurrentLastHeight"/>, but keeps retrying instead of letting
+		/// a request failure fault the worker at startup.
+		/// </summary>
+		/// <remarks>
+		/// Deliberately does not fall back to a height of 0. Height 0 means "no fromHeight filter",
+		/// so the first poll would return the node's most recent page of transactions and notify
+		/// every registered device about them — a burst of stale pushes to real users, triggered by
+		/// nothing worse than a momentary network blip. Waiting is always the safer answer here,
+		/// and the caller is a startup path with nothing else to do.
+		/// </remarks>
+		private async Task<int> GetNetworkCurrentLastHeightSafe(CancellationToken token)
+		{
+			var attempt = 0;
+
+			while (!token.IsCancellationRequested)
+			{
+				attempt++;
+
+				try
+				{
+					return await GetNetworkCurrentLastHeight();
+				}
+				catch (Exception ex)
+				{
+					Logger.LogError(ex, "Failed to get current network height at startup (attempt {0}), retrying in {1}", attempt, Delay);
+				}
+
+				try
+				{
+					await Task.Delay(Delay, token);
+				}
+				catch (TaskCanceledException)
+				{
+					break;
+				}
+			}
+
+			// Cancelled before any node answered. The loop below exits immediately on the same
+			// token, so this height is never used to fetch anything.
+			return 0;
 		}
 
 		private async Task<List<T>> GetTransactions(int height, int offset = 0)
