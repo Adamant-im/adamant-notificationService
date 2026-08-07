@@ -27,7 +27,7 @@ namespace Adamant.NotificationService.DataContext
 		public ANSContext CreateDbContext(string[] args)
 		{
 			var optionsBuilder = new DbContextOptionsBuilder<ANSContext>();
-			optionsBuilder.UseMySQL(designConnectionString);
+			optionsBuilder.UseMySql(designConnectionString, ServerVersion.AutoDetect(designConnectionString));
 			return new ANSContext(optionsBuilder.Options);
 		}
 
@@ -35,7 +35,7 @@ namespace Adamant.NotificationService.DataContext
 		{
 			if (!optionsBuilder.IsConfigured)
 			{
-				optionsBuilder.UseMySQL(designConnectionString);
+				optionsBuilder.UseMySql(designConnectionString, ServerVersion.AutoDetect(designConnectionString));
 			}
 		}
 
@@ -51,7 +51,7 @@ namespace Adamant.NotificationService.DataContext
 			{
 				case null:
 				case "mysql":
-					optionsBuilder.UseMySQL(connectionString);
+					optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
 					break;
 
 				case "sqlite":

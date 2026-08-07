@@ -25,17 +25,35 @@ namespace Adamant
 		{
 			if (string.IsNullOrEmpty(path))
 				return path;
-			
-			if (path[0] == '~')
-			{
-				if (path.Length > 0)
-					return Environment.GetFolderPath(Environment.SpecialFolder.Personal) + path.Substring(1);
 
-				else
-					Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-			}
+			if (path[0] == '~')
+				return GetHomeDirectory() + path.Substring(1);
 
 			return path;
+		}
+
+		/// <summary>
+		/// The current user's home directory.
+		/// </summary>
+		/// <remarks>
+		/// Must be <c>UserProfile</c>, not <c>Personal</c>. On Unix .NET resolves
+		/// <c>SpecialFolder.Personal</c> through XDG and returns an <em>empty string</em> when
+		/// XDG_DOCUMENTS_DIR is not configured — which is the normal case on a headless server.
+		/// That silently turned every "~/.ans/..." path into "/.ans/...", so the service could not
+		/// find its config, its APNs key or its NLog config. <c>UserProfile</c> is documented as
+		/// $HOME on Unix and is what this code always meant.
+		/// </remarks>
+		private static string GetHomeDirectory()
+		{
+			var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+			// GetFolderPath returns "" rather than throwing when it cannot resolve the folder.
+			// Fall back to $HOME directly so a misconfigured environment fails loudly on a real
+			// path instead of quietly rooting everything at "/".
+			if (string.IsNullOrEmpty(home))
+				home = Environment.GetEnvironmentVariable("HOME") ?? string.Empty;
+
+			return home;
 		}
 
 		public static DateTime ToDateTime(this double timestamp)

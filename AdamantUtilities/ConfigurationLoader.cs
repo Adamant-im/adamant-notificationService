@@ -11,8 +11,11 @@ namespace Adamant
 		/// <returns>The default configuration.</returns>
 		public static IConfigurationRoot GetConfiguration()
 		{
+			// SpecialFolder.Personal resolves through XDG on Unix and comes back empty on a
+			// headless server, which made this base path "/.ans/" and crashed both workers on
+			// startup. Reuse the shared "~" expansion so there is exactly one definition of home.
 			var builder = new ConfigurationBuilder()
-				.SetBasePath(Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "/.ans/")
+				.SetBasePath(Utilities.HandleUnixHomeDirectory("~/.ans/"))
 				.AddJsonFile("config.json", false, true);
 
 			return builder.Build();

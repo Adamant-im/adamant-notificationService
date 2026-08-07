@@ -99,10 +99,12 @@ namespace Adamant.NotificationService.SignalsRegistration
 									"");
 					continue;
 				} catch (JsonException e) {
-					Logger.LogError(e, "Failed to deserialize device info. TransactionId: {0}, message: {1}", trs.Id, message);
+					// `message` is the decrypted signal payload at this point (it includes the
+					// device's push token) — never log it, per AGENTS.md's privacy rules.
+					Logger.LogError(e, "Failed to deserialize device info. TransactionId: {0}", trs.Id);
 					continue;
 				} catch (Exception e) {
-					Logger.LogError(e, "Failed to read device info from message. TransactionId: {0}, message: {1}", trs.Id, message);
+					Logger.LogError(e, "Failed to read device info from message. TransactionId: {0}", trs.Id);
 					continue;
 				}
 			}
@@ -148,7 +150,7 @@ namespace Adamant.NotificationService.SignalsRegistration
                 try
                 {
                     Context.SaveChanges();
-                    Logger.LogInformation("Unsubscribe {0} devices.", devicesToRemove.Count);
+                    Logger.LogInformation("Unsubscribed {0} devices.", devicesToRemove.Count);
                 }
                 catch (Exception e)
                 {

@@ -1,13 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>Adamant</RootNamespace>
     <ReleaseVersion>0.4.1</ReleaseVersion>
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- TweetNaClCore 1.0.0 is the latest published version; no newer release exists. -->
     <PackageReference Include="TweetNaClCore" Version="1.0.0" />
-    <PackageReference Include="Sodium.Core" Version="1.2.0" />
+    <PackageReference Include="Sodium.Core" Version="1.4.1" />
   </ItemGroup>
 </Project>

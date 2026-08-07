@@ -2,17 +2,30 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>Adamant.NotificationService.DataContext</RootNamespace>
     <ReleaseVersion>0.4.1</ReleaseVersion>
   </PropertyGroup>
-  
+
+  <!--
+    EF Core 2.2 does not actually run on net8.0: its EntityFrameworkQueryableExtensions static
+    initializer does reflection-based LINQ method lookups that assume exactly one match per method
+    name, and .NET 8's larger System.Linq.Queryable surface breaks that assumption at the very
+    first query (confirmed by ANSDataContext.Tests failing with an AmbiguousMatchException before
+    this bump). EF Core 8 is required, which in turn requires swapping MySql.Data.EntityFrameworkCore
+    (an EF Core 2.x-only provider, abandoned upstream) for Pomelo.EntityFrameworkCore.MySql — the
+    actively maintained provider used by most of the .NET ecosystem. The 4 existing migrations
+    contain no provider-specific calls (see git history), so they still apply unchanged; production
+    already has them recorded as applied in __EFMigrationsHistory, so this bump touches no schema.
+    ANSDataContext.Tests exercises Migrate() + CRUD against SQLite as a runtime smoke test; the
+    MySQL-specific path (ServerVersion.AutoDetect in ANSContext.cs) still needs a real MySQL
+    instance to validate end-to-end before this ships.
+  -->
   <ItemGroup>
-    <PackageReference Include="MySql.Data.EntityFrameworkCore" Version="8.0.16" />
-    <PackageReference Include="MySql.Data.EntityFrameworkCore.Design" Version="8.0.16" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.4" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.2.4" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.2.4" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.29" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.29" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.29" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AdamantCore\AdamantCore.csproj" />
