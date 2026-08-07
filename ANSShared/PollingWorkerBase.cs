@@ -93,14 +93,14 @@ namespace Adamant.NotificationService
 					if (LastHeight == 0)
 					{
 						Logger.LogInformation("No stored height, warming up from network.");
-						LastHeight = await GetNetworkCurrentLastHeightSafe();
+						LastHeight = await GetNetworkCurrentLastHeightSafe(token);
 					}
 
 					break;
 
 				case StartupMode.network:
 					Logger.LogInformation("Warming up, getting current top height.");
-					LastHeight = await GetNetworkCurrentLastHeightSafe();
+					LastHeight = await GetNetworkCurrentLastHeightSafe(token);
 					break;
 
 				case StartupMode.initial:
@@ -142,20 +142,46 @@ namespace Adamant.NotificationService
 		}
 
 		/// <summary>
-		/// Same as <see cref="GetNetworkCurrentLastHeight"/>, but swallows request failures so a
-		/// down node at startup can't prevent the worker from starting at all.
+		/// Same as <see cref="GetNetworkCurrentLastHeight"/>, but keeps retrying instead of letting
+		/// a request failure fault the worker at startup.
 		/// </summary>
-		private async Task<int> GetNetworkCurrentLastHeightSafe()
+		/// <remarks>
+		/// Deliberately does not fall back to a height of 0. Height 0 means "no fromHeight filter",
+		/// so the first poll would return the node's most recent page of transactions and notify
+		/// every registered device about them — a burst of stale pushes to real users, triggered by
+		/// nothing worse than a momentary network blip. Waiting is always the safer answer here,
+		/// and the caller is a startup path with nothing else to do.
+		/// </remarks>
+		private async Task<int> GetNetworkCurrentLastHeightSafe(CancellationToken token)
 		{
-			try
+			var attempt = 0;
+
+			while (!token.IsCancellationRequested)
 			{
-				return await GetNetworkCurrentLastHeight();
+				attempt++;
+
+				try
+				{
+					return await GetNetworkCurrentLastHeight();
+				}
+				catch (Exception ex)
+				{
+					Logger.LogError(ex, "Failed to get current network height at startup (attempt {0}), retrying in {1}", attempt, Delay);
+				}
+
+				try
+				{
+					await Task.Delay(Delay, token);
+				}
+				catch (TaskCanceledException)
+				{
+					break;
+				}
 			}
-			catch (Exception ex)
-			{
-				Logger.LogError(ex, "Failed to get current network height at startup, starting from 0");
-				return 0;
-			}
+
+			// Cancelled before any node answered. The loop below exits immediately on the same
+			// token, so this height is never used to fetch anything.
+			return 0;
 		}
 
 		private async Task<List<T>> GetTransactions(int height, int offset = 0)

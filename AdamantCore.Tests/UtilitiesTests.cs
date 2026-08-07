@@ -15,15 +15,30 @@ namespace Adamant.Tests
 		[InlineData("/usr/local/", "/usr/local/")]
 		public void HandleUnixHomedirectory(string path, string expected)
 		{
+			// Resolve {home} from $HOME, NOT from the same Environment.GetFolderPath call the code
+			// under test uses. The previous version asked GetFolderPath(Personal) for both sides,
+			// so it passed even when that returned "" and every "~/..." path silently collapsed to
+			// "/..." — the exact bug that stopped both workers from starting on net8.
 			String expectedParsed;
 			if (!string.IsNullOrEmpty(expected))
-				expectedParsed = expected.Replace("{home}", Environment.GetFolderPath(Environment.SpecialFolder.Personal));
+				expectedParsed = expected.Replace("{home}", Environment.GetEnvironmentVariable("HOME"));
 			else
 				expectedParsed = expected;
-			
+
 			var handled = Utilities.HandleUnixHomeDirectory(path);
 
 			Assert.Equal(expectedParsed, handled);
+		}
+
+		[Fact]
+		public void HandleUnixHomeDirectory_ExpandsToAnAbsolutePathUnderHome()
+		{
+			// Guards the failure mode directly: "~/.ans" must never come back as "/.ans".
+			var handled = Utilities.HandleUnixHomeDirectory("~/.ans");
+
+			Assert.NotEqual("/.ans", handled);
+			Assert.EndsWith("/.ans", handled);
+			Assert.True(handled.Length > "/.ans".Length, $"'~' expanded to nothing: {handled}");
 		}
 
 		[Theory]

@@ -27,7 +27,11 @@ namespace Adamant.Api
 		private static string getTransactions = "api/transactions";
 		private static string getChatTransactions = "api/chats/get";
 
-		private static Random rnd = new Random();
+		// Random.Shared rather than a shared "new Random()": AdamantApi is registered as a
+		// singleton and both the chat and the transfer poller call SelectNextEndpoint concurrently.
+		// Random instances are not thread-safe, and concurrent Next() calls can corrupt the internal
+		// state so it degenerates to returning 0 forever — which would silently pin failover to one node.
+		private static Random Rnd => Random.Shared;
 
 		private readonly ILogger<AdamantApi> _logger;
 
@@ -69,7 +73,14 @@ namespace Adamant.Api
 
 		private static HttpClient CreateHttpClient()
 		{
-			var client = new HttpClient();
+			var client = new HttpClient
+			{
+				// HttpClient defaults to 100 seconds. A node that accepts the connection and then
+				// stalls would hold a poller for 100s per attempt, so a single wedged node could
+				// block a cycle for minutes across the configured list — far longer than the poll
+				// interval, and indistinguishable from a stopped service. Fail over quickly instead.
+				Timeout = TimeSpan.FromSeconds(20)
+			};
 			client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 			return client;
 		}
@@ -151,7 +162,7 @@ namespace Adamant.Api
 			// server that just failed.
 			var others = ServersList.Where(s => !s.Equals(CurrentServer)).ToList();
 			if (others.Count > 0)
-				CurrentServer = others[rnd.Next(others.Count)];
+				CurrentServer = others[Rnd.Next(others.Count)];
 		}
 
 		public static string BuildEndpoint(ServerDescription server, string function, Dictionary<string, string> query)

@@ -30,6 +30,13 @@ namespace Adamant.Api
 		           Port == other.Port;
 		}
 
+		// Implementing IEquatable<T> without these two leaves the type with two different notions
+		// of equality: Where(s => !s.Equals(x)) uses value equality, while Contains, Distinct,
+		// HashSet and Dictionary all fall back to reference equality. Keep them consistent.
+		public override bool Equals(object obj) => Equals(obj as ServerDescription);
+
+		public override int GetHashCode() => HashCode.Combine(Ip, Protocol, Port);
+
 		private static string BuildUrl(ServerDescription server)
 		{
 			var sb = new StringBuilder();
