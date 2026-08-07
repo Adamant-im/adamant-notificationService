@@ -1,0 +1,14 @@
+<Project>
+
+  <!--
+    Single source of truth for the solution's version. Previously each .csproj carried its own
+    <ReleaseVersion> tag (a MonoDevelop/Xamarin Studio property the modern .NET SDK never reads or
+    embeds anywhere — the compiled DLLs all shipped with the SDK's default 1.0.0.0 assembly
+    version, silently disconnected from the tag). This actually stamps AssemblyVersion, FileVersion,
+    and InformationalVersion for every project in the solution. Bump it here on release.
+  -->
+  <PropertyGroup>
+    <Version>0.5.0</Version>
+  </PropertyGroup>
+
+</Project>

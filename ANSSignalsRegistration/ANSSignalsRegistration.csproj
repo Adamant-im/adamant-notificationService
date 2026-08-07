@@ -5,7 +5,6 @@
     <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>Adamant.NotificationService.SignalsRegistration</RootNamespace>
     <AssemblyName>ANSSignalPollingWorker</AssemblyName>
-    <ReleaseVersion>0.4.1</ReleaseVersion>
   </PropertyGroup>
 
   <ItemGroup>

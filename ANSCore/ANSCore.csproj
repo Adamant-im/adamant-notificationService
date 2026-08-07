@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>Adamant.NotificationService</RootNamespace>
-    <ReleaseVersion>0.4.1</ReleaseVersion>
   </PropertyGroup>
 
   <ItemGroup>
