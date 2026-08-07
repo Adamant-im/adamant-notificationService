@@ -131,9 +131,14 @@ namespace Adamant.NotificationService.ApplePusher
 			switch (args.ResultCode)
 			{
 				case ApnsResult.BadRequest:
-					if (args.Reason.Equals("BadDeviceToken"))
+					// Reason comes from APNs' JSON body and is null whenever that body is missing
+					// or unparseable, so this must not be args.Reason.Equals(...): that throws an
+					// NRE on a Task.Run thread, where nothing observes it. Only "BadDeviceToken"
+					// means the token is dead — other 400s (BadTopic, PayloadEmpty, ...) are our
+					// own bugs and must never cost a user their registration.
+					if (string.Equals(args.Reason, "BadDeviceToken", StringComparison.Ordinal))
 						OnInvalidToken?.Invoke(this, new InvalidTokenEventArgs(args.Token));
-					
+
 					break;
 
 				case ApnsResult.TokenExpired:
