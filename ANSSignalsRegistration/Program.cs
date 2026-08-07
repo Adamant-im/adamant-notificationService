@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Adamant.Api;
 using Adamant.NotificationService.DataContext;
@@ -59,7 +58,7 @@ namespace Adamant.NotificationService.SignalsRegistration
 				nLogConfig = Utilities.HandleUnixHomeDirectory(nLogConfig);
 
 			_logger = NLog.LogManager.LoadConfiguration(nLogConfig).GetCurrentClassLogger();
-			_logger.Info("ANS Signals Registration version {0}", Assembly.GetExecutingAssembly().GetName().Version);
+			_logger.Info("ANS Signals Registration version {0}", AppVersion.Current);
 
 			var services = new ServiceCollection();
 
