@@ -67,6 +67,19 @@ namespace Adamant.Api.Tests
 		}
 
 		[Fact]
+		public void SelectNextEndpoint_WithAllServersDuplicatingCurrent_DoesNotHang()
+		{
+			// A misconfigured Api:Server with the same node listed twice must not hang the
+			// process looking for a "different" server that doesn't exist.
+			var api = BuildApi(("only-node.example.com", "https"), ("only-node.example.com", "https"));
+
+			for (var i = 0; i < 5; i++)
+				api.SelectNextEndpoint();
+
+			Assert.Equal("only-node.example.com", api.CurrentServer.Ip);
+		}
+
+		[Fact]
 		public void SelectNextEndpoint_WithMultipleServers_EventuallyVisitsAllOfThem()
 		{
 			var api = BuildApi(("node1.example.com", "https"), ("node2.example.com", "https"), ("node3.example.com", "https"));

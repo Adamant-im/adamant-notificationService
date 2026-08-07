@@ -8,11 +8,11 @@ using Xunit;
 namespace Adamant.NotificationService.DataContext.Tests
 {
 	/// <summary>
-	/// EF Core is deliberately left on the 2.2 line (see ANSDataContext.csproj) since the packages
-	/// still target netstandard2.0 and the app only needed its own TargetFramework raised to
-	/// net8.0. These tests exist to back that decision with something more than a compile check:
-	/// they exercise real migrations and CRUD against SQLite (the same code path used for MySQL,
-	/// modulo the provider) on the net8.0 runtime.
+	/// EF Core 2.2 does not run on net8.0 at runtime (see ANSDataContext.csproj for why), which is
+	/// what forced the move to EF Core 8 + Pomelo.EntityFrameworkCore.MySql. These tests are the
+	/// regression guard for that: they exercise real migrations and CRUD against SQLite (the same
+	/// DbContext code path used for MySQL, modulo the provider) on the net8.0 runtime, so a future
+	/// EF Core/provider bump that reintroduces a runtime break fails here instead of in production.
 	/// </summary>
 	public class EfCoreSanityTests : IDisposable
 	{

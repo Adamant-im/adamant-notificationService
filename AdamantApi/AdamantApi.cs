@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading.Tasks;
 using Adamant.Api.Responses;
@@ -142,13 +144,14 @@ namespace Adamant.Api
 				return;
 			}
 
-			ServerDescription next;
-			do
-			{
-				next = ServersList[rnd.Next(ServersList.Count)];
-			} while (next.Equals(CurrentServer));
-
-			CurrentServer = next;
+			// Filter first instead of a do/while random-reroll: if Api:Server has duplicate entries
+			// and every one of them equals CurrentServer, there is no "different" server to find,
+			// and a reroll loop would hang the process instead of just failing over. This is also
+			// strictly correct rather than merely bounded — it never wastes a draw re-picking the
+			// server that just failed.
+			var others = ServersList.Where(s => !s.Equals(CurrentServer)).ToList();
+			if (others.Count > 0)
+				CurrentServer = others[rnd.Next(others.Count)];
 		}
 
 		public static string BuildEndpoint(ServerDescription server, string function, Dictionary<string, string> query)
@@ -204,7 +207,8 @@ namespace Adamant.Api
 			}
 
 			_logger?.LogError(lastError, "All {Attempts} configured node(s) failed to respond", attempts);
-			throw lastError;
+			ExceptionDispatchInfo.Capture(lastError).Throw();
+			throw lastError; // Unreachable — Throw() above always throws; this only satisfies the compiler's return-path analysis.
 		}
 
 		#endregion

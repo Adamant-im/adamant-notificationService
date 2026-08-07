@@ -133,7 +133,8 @@ namespace Adamant.NotificationService.PollingWorker
 
 			if (device != null)
 			{
-				_logger.Info("Removing invalid/expired token: {0}", eventArgs.Token);
+				// Never log the device token itself — see AGENTS.md's privacy rules.
+				_logger.Info("Removing invalid/expired token for device {0}", device.ID);
 				_context.Devices.Remove(device);
 				_context.SaveChanges();
 			}
